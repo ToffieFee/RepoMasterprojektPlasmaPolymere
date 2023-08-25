@@ -4,6 +4,7 @@ from os.path import exists
 import matplotlib
 import matplotlib.pyplot as plt
 import operator
+from read_xls_zugversuche import read_xls_zugversuch_statistik, read_xls_zugversuch_verlaeufe, plot_zugversuch_verlaeufe
 from functools import reduce
 
 
@@ -473,6 +474,8 @@ if __name__ == '__main__':
     path_KW_txtfiles = "/Users/toffiefee/Documents/Uni_Bremen/Masterprojekt_2.0/Ergebnisse/Kontaktwinkelmessungen/AD/"
     no_of_KW_samples = 3
 
+    path_Zug_xlsfiles = "/Users/toffiefee/Documents/Uni_Bremen/Masterprojekt_2.0/Ergebnisse/Zugversuch/"
+
     one_mat = 'y'       # 'y' or 'n'
     material = 'PA66'
 
@@ -497,7 +500,7 @@ if __name__ == '__main__':
     yerr = 'OE_polar_std'
 
     save_plot_path = "/Users/toffiefee/Documents/Uni_Bremen/Masterprojekt_2.0/Ergebnisse/Abbildungen/"
-    save_plot_name = "PA66_t5_polar"
+    save_plot_name = "" #"PA66_t5_polar"
 
     figsize = [8,4] # [x, y]
 
@@ -560,6 +563,6 @@ if __name__ == '__main__':
     
 
     plt.tight_layout()
-    if save_plot_path != "" or save_plot_path != None and save_plot_name != "" or save_plot_name != None:
-        plt.savefig(save_plot_path + save_plot_name + ".png", dpi=300)
+    # if save_plot_path != "" or save_plot_path != None and save_plot_name != "" or save_plot_name != None:
+    #     plt.savefig(save_plot_path + save_plot_name + ".png", dpi=300)
     plt.show()
