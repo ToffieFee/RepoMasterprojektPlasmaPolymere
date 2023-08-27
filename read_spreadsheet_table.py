@@ -19,6 +19,80 @@ locale.setlocale(locale.LC_NUMERIC, "de_DE")
 plt.rcParams['axes.formatter.use_locale'] = True
 
 
+def read_xls_zugversuch_statistik(path, date, filename):
+    file_ = path + str(date) + "/" + filename + "_1.xls"
+    df = pd.read_excel(file_, sheet_name="Statistik", header=[0,1])
+    df.columns = df.columns.map(" in ".join)
+    Fmax = df["Fmax in N"]
+    eF = df["e-F max 2 in mm"]
+    tmax = df["tmax in MPa"]
+    S0 = df["S0 in mm²"]
+    # 0 = Mittelwert
+    # 1 = Standardabweichung absolut
+    # 2 = Standardabweichung relativ in %
+
+    # print(df)
+    # print(df["Fmax in N"].iloc[0])
+    # print(Fmax[0])
+
+    return Fmax, eF, tmax, S0
+
+def read_xls_zugversuch_verlaeufe(path, filename, n=5):
+    file_ = path + filename + "_1.xls"
+    proben = [pd.read_excel(file_, sheet_name=str(i+1), header=[1,2]) for i in range(n)]
+    for p in proben:
+        p.columns = p.columns.map(" in ".join)
+    
+    return proben
+
+def plot_zugversuch_verlaeufe(proben):
+    
+    plt.figure()
+    cmap = matplotlib.cm.get_cmap('plasma')
+    colors = np.asarray([cmap(0.01), cmap(0.2), cmap(0.5), cmap(0.7), cmap(0.9)])
+    for i, p in enumerate(proben):
+        plt.scatter(p["Dehnung in mm"], p["Standardkraft in N"], marker=".", s=0.5, c=colors[i])
+    
+    plt.show()
+
+def load_zugversuch_data(df, path):
+    
+    df['Fmax in N mean'] = ''
+    df['e-F max in mm mean'] = ''
+    df['tmax in MPa mean'] = ''
+    df['S0 in mm² mean'] = ''
+    df['Fmax in N std'] = ''
+    df['e-F max in mm std'] = ''
+    df['tmax in MPa std'] = ''
+    df['S0 in mm² std'] = ''
+
+    for i, samplename in enumerate(df.iterrows()):
+        zug_name = df["Zug_Bezeichnung"].iloc[i]
+        zug_date = df["Zug_Datum"].iloc[i]
+        # print(type(zug_name))
+        if type(zug_name) == str:
+            # print("row!######",row)
+            # print('if############', zug_name)
+            # print(zug_date)
+            zug_date = str(zug_date)
+            zug_date = zug_date[0:-9]
+            zug_date = zug_date.split("-")
+            zug_date = str(zug_date[2] + "." + zug_date[1] + "." + zug_date[0])
+            print(samplename[0])
+            Fmax, eF, tmax, S0 = read_xls_zugversuch_statistik(path, zug_date, str(zug_name))
+            # print(type(samplename[0]))
+            
+            df.at[samplename[0], 'Fmax in N mean'] = Fmax[0]
+            df.at[samplename[0], 'Fmax in N std'] = Fmax[1]
+            df.at[samplename[0], 'e-F max in mm mean'] = eF[0]
+            df.at[samplename[0], 'e-F max in mm std'] = eF[1]
+            df.at[samplename[0], 'tmax in MPa mean'] = tmax[0]
+            df.at[samplename[0], 'tmax in MPa std'] = tmax[1]
+            df.at[samplename[0], 'S0 in mm² mean'] = S0[0]
+            df.at[samplename[0], 'S0 in mm² std'] = S0[1]
+
+    return df
+
 def import_KW_txtfile(path, samplename, no_of_samples=3):
     """ Importieren der Messergebnisse der Kontaktwinkelmessung.
 
@@ -169,14 +243,15 @@ def load_KW_data(df, path, no_of_KW_samples=3):
         
     df = df.astype({"KW_Wasser_mean": float, "KW_Wasser_std": float, "KW_Diodmethan_mean": float, "KW_Diodmethan_std": float, "KW_Ethylglykol_mean": float, "KW_Ethylglykol_std": float, "OE_total_mean": float, "OE_total_std": float,"OE_dispers_mean": float, "OE_dispers_std": float, "OE_polar_mean": float, "OE_polar_std": float})
 
-    # delete all non-KW-value rows
-    OE_vals_where = df['OE_polar_mean'].notna()
-    indices_OE = np.where(OE_vals_where)[0] # indices
-    df = df.iloc[indices_OE]
+    # # delete all non-KW-value rows
+    # OE_vals_where = df['OE_polar_mean'].notna()
+    # indices_OE = np.where(OE_vals_where)[0] # indices
+    # df = df.iloc[indices_OE]
 
     print("\n")
     
     return df
+
 
 def read_spreadsheet_tsv(path, filename):
     
@@ -197,8 +272,6 @@ def read_spreadsheet_xls(path, filename):
     df = df[df.index.notna()]
     df = df[df.index != "KW"]
     df = df[df.index != "Kleben"]
-    
-    # print(df.index)
 
     return df
 
@@ -536,6 +609,8 @@ if __name__ == '__main__':
     df = read_spreadsheet_xls(path_spreadsheet, filename_spreadsheet)
 
     # df = load_KW_data(df, path_KW_txtfiles, no_of_KW_samples=no_of_KW_samples)
+
+    df = load_zugversuch_data(df, path_Zug_xlsfiles)
 
     # datatypes = df.dtypes
     # print(datatypes)
