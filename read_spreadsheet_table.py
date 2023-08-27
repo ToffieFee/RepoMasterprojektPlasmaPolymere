@@ -1,11 +1,22 @@
 import numpy as np
 import pandas as pd
+import math
 from os.path import exists
+import openpyxl
 import matplotlib
 import matplotlib.pyplot as plt
 import operator
 from read_xls_zugversuche import read_xls_zugversuch_statistik, read_xls_zugversuch_verlaeufe, plot_zugversuch_verlaeufe
 from functools import reduce
+matplotlib.rcParams['mathtext.fontset'] = 'stix'
+matplotlib.rcParams['font.family'] = 'STIXGeneral'
+matplotlib.rcParams.update({'font.size': 12})
+#Locale settings
+import locale
+# Set to German locale to get comma decimal separater
+locale.setlocale(locale.LC_NUMERIC, "de_DE")
+# Tell matplotlib to use the locale we set above
+plt.rcParams['axes.formatter.use_locale'] = True
 
 
 def import_KW_txtfile(path, samplename, no_of_samples=3):
@@ -39,8 +50,10 @@ def import_KW_txtfile(path, samplename, no_of_samples=3):
 
     iterate_samples = ["_Probe" + str(n+1) for n in range(no_of_samples)]
 
+
+    
     f = path + samplename + iterate_samples[0] + ".txt"
-    # print(f)
+    # print("*****F*****:", f)
 
     if exists(f):
 
@@ -176,6 +189,19 @@ def read_spreadsheet_tsv(path, filename):
     # ND-Plasmaparameter müssen noch angepasst werden
 
     return df
+
+def read_spreadsheet_xls(path, filename):
+    file_ = path + filename
+    df = pd.read_excel(file_ + ".xlsx", engine='openpyxl', skiprows=3)
+    df = df.set_index('Probe')
+    df = df[df.index.notna()]
+    df = df[df.index != "KW"]
+    df = df[df.index != "Kleben"]
+    
+    # print(df.index)
+
+    return df
+
 
 def reduce_df(df, one_mat, material, one_condition, condition, one_gf, gfamount, one_type, type_, one_time, time, del_columns, columns_of_interest):
 
@@ -469,17 +495,17 @@ def reduce_df(df, one_mat, material, one_condition, condition, one_gf, gfamount,
 if __name__ == '__main__':
 
     path_spreadsheet = "/Users/toffiefee/Documents/Uni_Bremen/Masterprojekt_2.0/Ergebnisse/"
-    filename_spreadsheet = "Proben_Uebersichts_Tabelle-Dokumentation-Tabellenblatt1.tsv"
+    filename_spreadsheet = "Proben_Uebersichts_Tabelle-Dokumentation"
 
     path_KW_txtfiles = "/Users/toffiefee/Documents/Uni_Bremen/Masterprojekt_2.0/Ergebnisse/Kontaktwinkelmessungen/AD/"
     no_of_KW_samples = 3
 
     path_Zug_xlsfiles = "/Users/toffiefee/Documents/Uni_Bremen/Masterprojekt_2.0/Ergebnisse/Zugversuch/"
 
-    one_mat = 'y'       # 'y' or 'n'
+    one_mat = 'n'       # 'y' or 'n'
     material = 'PA66'
 
-    one_condition = 'y' # 'y' or 'n'
+    one_condition = 'n' # 'y' or 'n'
     condition = 'rezykliert'
 
     one_gf = 'n'        # 'y' or 'n'
@@ -488,10 +514,10 @@ if __name__ == '__main__':
     one_type = 'n'      # 'y' or 'n'
     type_ = 'Dymid'
 
-    one_time = 'y'      # 'y' or 'n'
+    one_time = 'n'      # 'y' or 'n'
     time = 5.0
 
-    del_columns = 'y'   # 'y' or 'n'
+    del_columns = 'n'   # 'y' or 'n'
     columns_of_interest = ['Material', 'Glasfaseranteil', 'Typ', 'Verfahrgeschwindigkeit [m/min]', 'Zeit', 'KW_Wasser_mean', 'KW_Wasser_std', 'KW_Diodmethan_mean', 'KW_Diodmethan_std', 'KW_Ethylglykol_mean', 'KW_Ethylglykol_std', 'OE_total_mean', 'OE_total_std', 'OE_dispers_mean', 'OE_dispers_std', 'OE_polar_mean', 'OE_polar_std']
 
     # plotting settings
@@ -507,62 +533,64 @@ if __name__ == '__main__':
 
 ##################################################################################################
 
-    df = read_spreadsheet_tsv(path_spreadsheet, filename_spreadsheet)
+    df = read_spreadsheet_xls(path_spreadsheet, filename_spreadsheet)
 
-    df = load_KW_data(df, path_KW_txtfiles, no_of_KW_samples=no_of_KW_samples)
+    # df = load_KW_data(df, path_KW_txtfiles, no_of_KW_samples=no_of_KW_samples)
 
     # datatypes = df.dtypes
     # print(datatypes)
 
-    df, label = reduce_df(df, one_mat, material, one_condition, condition, one_gf, gfamount, one_type, type_, one_time, time, del_columns, columns_of_interest)
+    # df, label = reduce_df(df, one_mat, material, one_condition, condition, one_gf, gfamount, one_type, type_, one_time, time, del_columns, columns_of_interest)
 
     # x = input(f'Enter X : {df.columns} \n')
     # y = input(f'Enter Y : {df.columns} \n')
 
-
-    cmap = matplotlib.cm.get_cmap('turbo_r')
-    plt.figure(figsize=figsize)
+    # print(df)
 
 
-    if type(df) != list:
-
-        # print(df[['Verfahrgeschwindigkeit [m/min]', 'Glasfaseranteil', 'Typ', 'Zeit']])
-
-        color = cmap(0.3)
-
-        plt.scatter(df[x], df[y], label=label, marker='x')
-        if yerr != '' or yerr != None:
-            plt.errorbar(df[x], df[y], yerr=df[yerr], xerr=None, fmt='none', capsize=3.0, elinewidth=0.5, ecolor=color)
-        plt.xlabel(str(x))
-        plt.ylabel(str(y))
-        plt.legend()
-        plt.show()
-
-    else:
-
-        amount_colors = len(df)
-        colors = [cmap(c) for c in np.arange(0.05, 0.95, 1/amount_colors)]
-
-        # print(df)
-        for i, d in enumerate(df):
-
-            # print(d[['Verfahrgeschwindigkeit [m/min]', 'Glasfaseranteil', 'Typ', 'Zeit']])
-            print(d['Verfahrgeschwindigkeit [m/min]'])
-            if d['Verfahrgeschwindigkeit [m/min]'] == 0.0:
-                plt.hline(d[y],0,1)
-            else:
-                plt.scatter(d[x], d[y], label=label[i], marker='x', color=colors[i])
-                if yerr != '' or yerr != None:
-                    plt.errorbar(d[x], d[y], yerr=d[yerr], xerr=None, fmt='none', capsize=3.0, elinewidth=0.5, ecolor=colors[i])
+    # cmap = matplotlib.cm.get_cmap('turbo_r')
+    # plt.figure(figsize=figsize)
 
 
-        plt.xlabel(str(x))
-        plt.ylabel(str(y))
-        plt.legend(fontsize='small', loc="center left", bbox_to_anchor=(1.0, 0.5))
+    # if type(df) != list:
+
+    #     # print(df[['Verfahrgeschwindigkeit [m/min]', 'Glasfaseranteil', 'Typ', 'Zeit']])
+
+    #     color = cmap(0.3)
+
+    #     plt.scatter(df[x], df[y], label=label, marker='x')
+    #     if yerr != '' or yerr != None:
+    #         plt.errorbar(df[x], df[y], yerr=df[yerr], xerr=None, fmt='none', capsize=3.0, elinewidth=0.5, ecolor=color)
+    #     plt.xlabel(str(x))
+    #     plt.ylabel(str(y))
+    #     plt.legend()
+    #     plt.show()
+
+    # else:
+
+    #     amount_colors = len(df)
+    #     colors = [cmap(c) for c in np.arange(0.05, 0.95, 1/amount_colors)]
+
+    #     # print(df)
+    #     for i, d in enumerate(df):
+
+    #         # print(d[['Verfahrgeschwindigkeit [m/min]', 'Glasfaseranteil', 'Typ', 'Zeit']])
+    #         print(d['Verfahrgeschwindigkeit [m/min]'])
+    #         if d['Verfahrgeschwindigkeit [m/min]'] == 0.0:
+    #             plt.hline(d[y],0,1)
+    #         else:
+    #             plt.scatter(d[x], d[y], label=label[i], marker='x', color=colors[i])
+    #             if yerr != '' or yerr != None:
+    #                 plt.errorbar(d[x], d[y], yerr=d[yerr], xerr=None, fmt='none', capsize=3.0, elinewidth=0.5, ecolor=colors[i])
+
+
+    #     plt.xlabel(str(x))
+    #     plt.ylabel(str(y))
+    #     plt.legend(fontsize='small', loc="center left", bbox_to_anchor=(1.0, 0.5))
     
     
 
-    plt.tight_layout()
-    # if save_plot_path != "" or save_plot_path != None and save_plot_name != "" or save_plot_name != None:
-    #     plt.savefig(save_plot_path + save_plot_name + ".png", dpi=300)
-    plt.show()
+    # plt.tight_layout()
+    # # if save_plot_path != "" or save_plot_path != None and save_plot_name != "" or save_plot_name != None:
+    # #     plt.savefig(save_plot_path + save_plot_name + ".png", dpi=300)
+    # plt.show()
