@@ -212,15 +212,13 @@ def load_KW_data(df, path, no_of_KW_samples=3):
 
     for samplename, _ in df.iterrows():
         
-        # ordner name:
-        # if "_C2" in samplename:
-        #     ordner_name = samplename.split("_C2")
+        # Ordner name:
         if "_Vfg" in samplename:
             ordner_name = samplename.split("_Vfg")
         elif "_Referenz" in samplename:
             ordner_name = samplename.split("_Referenz")
         else:
-            print("There is neither _C2 nor _Vfg nor _Referenz in the name of the samplename, ", samplename)
+            print("There is neither '_Vfg' nor '_Referenz' in the name of the samplename, ", samplename)
         
         ordner_name = ordner_name[0]
         # print(type(ordner_name))
@@ -292,9 +290,10 @@ def read_spreadsheet_xls(path, filename):
     return df
 
 
-def reduce_df(df, one_mat, material, one_condition, condition, one_gf, gfamount, one_type, type_, one_time, time, del_columns, columns_of_interest):
+def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condition, condition, one_gf, gfamount, one_type, type_, one_time, time, del_columns, columns_of_interest):
 
     df_list = []
+    combi_impossible = "no"
 
     # MATERIAL
     # one_mat = input("Plot one material? Enter 'y' or 'n' : ")
@@ -305,7 +304,7 @@ def reduce_df(df, one_mat, material, one_condition, condition, one_gf, gfamount,
 
         material_where = df['Material'] == material
         indices_mat = np.where(material_where)[0] # indices
-        if len(indices_mat) == 0:
+        if len(indices_mat) == 0 and indices_mat:
             indices_mat = [0]
         df = df.iloc[indices_mat]
 
@@ -318,11 +317,14 @@ def reduce_df(df, one_mat, material, one_condition, condition, one_gf, gfamount,
         for mat in materialtypes:
             material_where = df['Material'] == mat
             indices_mat = np.where(material_where)[0] # indices
-            if len(indices_mat) == 0:
+            if len(indices_mat) == 0 and indices_mat:
                 indices_mat = [0]
             df_ = df.iloc[indices_mat]
             df_list.append(df_)
             label.append(mat)
+            if not df_list:
+                combi_impossible = "yes"
+                print("No such combination available")
 
 
     # ZUSTAND
@@ -335,7 +337,7 @@ def reduce_df(df, one_mat, material, one_condition, condition, one_gf, gfamount,
         if type(label) != list:
             condition_where = df['Zustand'] == condition
             indices_cond = np.where(condition_where)[0] # indices
-            if len(indices_cond) == 0:
+            if len(indices_cond) == 0 and indices_cond:
                 indices_cond = [0]
             df = df.iloc[indices_cond]
             label = label + "_" + condition
@@ -345,11 +347,14 @@ def reduce_df(df, one_mat, material, one_condition, condition, one_gf, gfamount,
             for d in df_list:
                 condition_where = d['Zustand'] == condition
                 indices_cond = np.where(condition_where)[0] # indices
-                if len(indices_cond) == 0:
+                if len(indices_cond) == 0 and indices_cond:
                     indices_cond = [0]
                 df_list_.append(d.iloc[indices_cond])
             df_list = df_list_
             label = [l + "_" + condition for l in label]
+            if not df_list:
+                combi_impossible = "yes"
+                print("No such combination available")
 
     else:
 
@@ -360,7 +365,7 @@ def reduce_df(df, one_mat, material, one_condition, condition, one_gf, gfamount,
             for cond in conditiontypes:
                 condition_where = df['Zustand'] == cond
                 indices_cond = np.where(condition_where)[0] # indices
-                if len(indices_cond) == 0:
+                if len(indices_cond) == 0 and indices_cond:
                     indices_cond = [0]
                 df_ = df.iloc[indices_cond]
                 df_list.append(df_)
@@ -374,13 +379,77 @@ def reduce_df(df, one_mat, material, one_condition, condition, one_gf, gfamount,
                 for cond in conditiontypes:
                     condition_where = d['Zustand'] == cond
                     indices_cond = np.where(condition_where)[0] # indices
-                    if len(indices_cond) == 0:
+                    if len(indices_cond) == 0 and indices_cond:
                         indices_cond = [0]
                     df_list_.append(d.iloc[indices_cond])
                     lab.append(cond)
                 label_.append([label[i] + "_" + l for l in lab])
             df_list = df_list_
             label = reduce(operator.add, label_)
+            if not df_list:
+                combi_impossible = "yes"
+                print("No such combination available")
+
+
+    # Trennmittelschicht
+    # print(df_list)
+    if one_mT_or_oT == "y":
+
+        if type(label) != list:
+            trennmittelschicht_where = df['Trennmittelschicht'] == trennmittelschicht
+            indices_trennmittelschicht = np.where(trennmittelschicht_where)[0] # indices
+            if len(indices_trennmittelschicht) == 0 and indices_trennmittelschicht:
+                indices_trennmittelschicht = [0]
+            df = df.iloc[indices_trennmittelschicht]
+            label = label + "_" + str(trennmittelschicht)
+        else:
+            df_list_ = []
+            for d in df_list:
+                trennmittelschicht_where = d['Trennmittelschicht'] == trennmittelschicht
+                indices_trennmittelschicht = np.where(trennmittelschicht_where)[0] # indices
+                if len(indices_trennmittelschicht) == 0 and indices_trennmittelschicht:
+                    indices_trennmittelschicht = [0]
+                df_list_.append(d.iloc[indices_trennmittelschicht])
+            df_list = df_list_
+            label = [l + "_" + str(trennmittelschicht) for l in label]
+            if not df_list:
+                combi_impossible = "yes"
+                print("No such combination available")
+            # print(df_list)
+    elif one_mT_or_oT == "n":
+
+        label_ = []
+        
+        if type(label) != list:
+            trennmittelschichten = df['Trennmittelschicht'].unique()
+            for tr in trennmittelschichten:
+                trennmittelschicht_where = df['Trennmittelschicht'] == tr
+                indices_trennmittelschicht = np.where(trennmittelschicht_where)[0] # indices
+                if len(indices_trennmittelschicht) == 0 and indices_trennmittelschicht:
+                    indices_trennmittelschicht = [0]
+                df_ = df.iloc[indices_trennmittelschicht]
+                df_list.append(df_)
+                label_.append(tr)
+            label = [label + "_" + str(l) for l in label_]
+        else:
+            df_list_ = []
+            for i, d in enumerate(df_list):
+                trennmittelschichten = d['Trennmittelschicht'].unique()
+                lab = []
+                for tr in trennmittelschichten:
+                    trennmittelschicht_where = d['Trennmittelschicht'] == tr
+                    indices_trennmittelschicht = np.where(trennmittelschicht_where)[0] # indices
+                    if len(indices_trennmittelschicht) == 0 and indices_trennmittelschicht:
+                        indices_trennmittelschicht = [0]
+                    df_list_.append(d.iloc[indices_trennmittelschicht])
+                    lab.append(tr)
+                label_.append([label[i] + "_" + str(l) for l in lab])
+            df_list = df_list_
+            label = reduce(operator.add, label_)
+            if not df_list:
+                combi_impossible = "yes"
+                print("No such combination available")
+
 
 
     # Glasfaseranteil
@@ -393,7 +462,7 @@ def reduce_df(df, one_mat, material, one_condition, condition, one_gf, gfamount,
         if type(label) != list:
             gfamount_where = df['Glasfaseranteil'] == gfamount
             indices_gf = np.where(gfamount_where)[0] # indices
-            if len(indices_gf) == 0:
+            if len(indices_gf) == 0 and indices_gf:
                 indices_gf = [0]
             df = df.iloc[indices_gf]
             label = label + "_gf" + str(int(gfamount))
@@ -403,13 +472,16 @@ def reduce_df(df, one_mat, material, one_condition, condition, one_gf, gfamount,
             for d in df_list:
                 gfamount_where = d['Glasfaseranteil'] == gfamount
                 indices_gf = np.where(gfamount_where)[0] # indices
-                if len(indices_gf) == 0:
+                if len(indices_gf) == 0 and indices_gf:
                     indices_gf = [0]
                 df_list_.append(d.iloc[indices_gf])
             df_list = df_list_
             label = [l + "_gf" + str(int(gfamount)) for l in label]
+            if not df_list:
+                combi_impossible = "yes"
+                print("No such combination available")
 
-    else:
+    elif one_gf == "n":
 
         label_ = []
         
@@ -418,7 +490,7 @@ def reduce_df(df, one_mat, material, one_condition, condition, one_gf, gfamount,
             for amount in gfamount_types:
                 gfamount_where = df['Glasfaseranteil'] == amount
                 indices_gf = np.where(gfamount_where)[0] # indices
-                if len(indices_gf) == 0:
+                if len(indices_gf) == 0 and indices_gf:
                     indices_gf = [0]
                 df_ = df.iloc[indices_gf]
                 df_list.append(df_)
@@ -433,13 +505,16 @@ def reduce_df(df, one_mat, material, one_condition, condition, one_gf, gfamount,
                 for amount in gfamount_types:
                     gfamount_where = d['Glasfaseranteil'] == amount
                     indices_gf = np.where(gfamount_where)[0] # indices
-                    if len(indices_gf) == 0:
+                    if len(indices_gf) == 0 and indices_gf:
                         indices_gf = [0]
                     df_list_.append(d.iloc[indices_gf])
                     lab.append(amount)
                 label_.append([label[i] + "_gf" + str(int(l)) for l in lab])
             df_list = df_list_
             label = reduce(operator.add, label_)
+            if not df_list:
+                combi_impossible = "yes"
+                print("No such combination available")
 
 
     # Typ
@@ -452,7 +527,7 @@ def reduce_df(df, one_mat, material, one_condition, condition, one_gf, gfamount,
         if type(label) != list:
             type_where = df['Typ'] == type_
             indices_type = np.where(type_where)[0] # indices
-            if len(indices_type) == 0:
+            if len(indices_type) == 0 and indices_type:
                 indices_type = [0]
             df = df.iloc[indices_type]
             label = label + "_" + type_
@@ -461,11 +536,14 @@ def reduce_df(df, one_mat, material, one_condition, condition, one_gf, gfamount,
             for d in df_list:
                 type_where = d['Typ'] == type_
                 indices_type = np.where(type_where)[0] # indices
-                if len(indices_type) == 0:
+                if len(indices_type) == 0 and indices_type:
                     indices_type = [0]
                 df_list_.append(d.iloc[indices_type])
             df_list = df_list_
             label = [l + "_" + type_ for l in label]
+            if not df_list:
+                combi_impossible = "yes"
+                print("No such combination available")
 
     else:
 
@@ -476,7 +554,7 @@ def reduce_df(df, one_mat, material, one_condition, condition, one_gf, gfamount,
             for t in types_:
                 type_where = df['Typ'] == t
                 indices_type = np.where(type_where)[0] # indices
-                if len(indices_type) == 0:
+                if len(indices_type) == 0 and indices_type:
                     indices_type = [0]
                 df_ = df.iloc[indices_type]
                 df_list.append(df_)
@@ -490,7 +568,7 @@ def reduce_df(df, one_mat, material, one_condition, condition, one_gf, gfamount,
                 for t in types_:
                     type_where = d['Typ'] == t
                     indices_type = np.where(type_where)[0] # indices
-                    if len(indices_type) == 0:
+                    if len(indices_type) == 0 and indices_type:
                         indices_type = [0]
                     df_list_.append(d.iloc[indices_type])
                     lab.append(t)
@@ -498,6 +576,9 @@ def reduce_df(df, one_mat, material, one_condition, condition, one_gf, gfamount,
             # print(df_list_)
             df_list = df_list_
             label = reduce(operator.add, label_)
+            if not df_list:
+                combi_impossible = "yes"
+                print("No such combination available")
 
 
     # Zeit
@@ -510,7 +591,7 @@ def reduce_df(df, one_mat, material, one_condition, condition, one_gf, gfamount,
         if type(label) != list:
             time_where = df['Zeit'] == time
             indices_time = np.where(time_where)[0] # indices
-            if len(indices_time) == 0:
+            if len(indices_time) == 0 and indices_time:
                 indices_time = [0]
             df = df.iloc[indices_time]
             label = label + "_t" + str(int(time)) + "min"
@@ -519,13 +600,17 @@ def reduce_df(df, one_mat, material, one_condition, condition, one_gf, gfamount,
             for d in df_list:
                 time_where = d['Zeit'] == time
                 indices_time = np.where(time_where)[0] # indices
-                if len(indices_time) == 0:
+                if len(indices_time) == 0 and indices_time.size > 0:
                     indices_time = [0]
                 df_list_.append(d.iloc[indices_time])
             df_list = df_list_
             label = [l + "_t" + str(int(time)) + "min" for l in label]
+            if not df_list:
+                combi_impossible = "yes"
+                print("No such combination available")
             # print(df_list)
-    else:
+
+    elif one_time == "n":
 
         label_ = []
         
@@ -534,7 +619,7 @@ def reduce_df(df, one_mat, material, one_condition, condition, one_gf, gfamount,
             for tim in times:
                 time_where = df['Zeit'] == tim
                 indices_time = np.where(time_where)[0] # indices
-                if len(indices_time) == 0:
+                if len(indices_time) == 0 and indices_time:
                     indices_time = [0]
                 df_ = df.iloc[indices_time]
                 df_list.append(df_)
@@ -548,15 +633,141 @@ def reduce_df(df, one_mat, material, one_condition, condition, one_gf, gfamount,
                 for tim in times:
                     time_where = d['Zeit'] == tim
                     indices_time = np.where(time_where)[0] # indices
-                    if len(indices_time) == 0:
+                    if len(indices_time) == 0 and indices_time:
                         indices_time = [0]
                     df_list_.append(d.iloc[indices_time])
                     lab.append(tim)
                 label_.append([label[i] + "_t" + str(int(l)) + "min" for l in lab])
             df_list = df_list_
             label = reduce(operator.add, label_)
+            if not df_list:
+                combi_impossible = "yes"
+                print("No such combination available")
 
 
+    # Zyklus
+    # print(df_list)
+    if one_zyklus == "y":
+
+        if type(label) != list:
+            zyklus_where = df['Zyklenanzahl'] == zyklusanzahl
+            indices_zyklus = np.where(zyklus_where)[0] # indices
+            if len(indices_zyklus) == 0 and indices_zyklus:
+                indices_zyklus = [0]
+            df = df.iloc[indices_zyklus]
+            label = label + "_" + str(int(zyklusanzahl)) + "x"
+        else:
+            df_list_ = []
+            for d in df_list:
+                zyklus_where = d['Zyklenanzahl'] == zyklusanzahl
+                indices_zyklus = np.where(zyklus_where)[0] # indices
+                if len(indices_zyklus) == 0 and indices_zyklus:
+                    indices_zyklus = [0]
+                df_list_.append(d.iloc[indices_zyklus])
+            df_list = df_list_
+            label = [l + "_" + str(int(zyklusanzahl)) + "x" for l in label]
+            if not df_list:
+                combi_impossible = "yes"
+                print("No such combination available")
+            # print(df_list)
+
+    elif one_verfahrgeschwindigkeit == "n":
+
+        label_ = []
+        
+        if type(label) != list:
+            zyklen = df['Zyklenanzahl'].unique()
+            for zyk in zyklen:
+                zyklus_where = df['Zyklenanzahl'] == zyk
+                indices_zyklus = np.where(zyklus_where)[0] # indices
+                if len(indices_zyklus) == 0 and indices_zyklus:
+                    indices_zyklus = [0]
+                df_ = df.iloc[indices_zyklus]
+                df_list.append(df_)
+                label_.append(zyk)
+            label = [label + "_" + str(int(l)) + "x" for l in label_]
+        else:
+            df_list_ = []
+            for i, d in enumerate(df_list):
+                zyklen = d['Zyklenanzahl'].unique()
+                lab = []
+                for zyk in zyklen:
+                    zyklus_where = d['Verfahrgeschwindigkeit'] == zyk
+                    indices_zyklus = np.where(zyklus_where)[0] # indices
+                    if len(indices_zyklus) == 0 and indices_zyklus:
+                        indices_zyklus = [0]
+                    df_list_.append(d.iloc[indices_zyklus])
+                    lab.append(zyk)
+                label_.append([label[i] + "_" + str(int(l)) + "x" for l in lab])
+            df_list = df_list_
+            label = reduce(operator.add, label_)
+            if not df_list:
+                combi_impossible = "yes"
+                print("No such combination available")
+
+
+    # Verfahrgeschwindigkeit
+    # print(df_list)
+    if one_verfahrgeschwindigkeit == "y":
+
+        if type(label) != list:
+            verfahrgeschwindigkeit_where = df['Verfahrgeschwindigkeit'] == verfahrgeschwindigkeit
+            indices_verfahrgeschwindigkeit = np.where(verfahrgeschwindigkeit_where)[0] # indices
+            if len(indices_verfahrgeschwindigkeit) == 0 and indices_verfahrgeschwindigkeit:
+                indices_verfahrgeschwindigkeit = [0]
+            df = df.iloc[indices_verfahrgeschwindigkeit]
+            label = label + "_" + str(verfahrgeschwindigkeit) + "m-min"
+        else:
+            df_list_ = []
+            for d in df_list:
+                verfahrgeschwindigkeit_where = d['Verfahrgeschwindigkeit'] == verfahrgeschwindigkeit
+                indices_verfahrgeschwindigkeit = np.where(verfahrgeschwindigkeit_where)[0] # indices
+                if len(indices_verfahrgeschwindigkeit) == 0 and indices_verfahrgeschwindigkeit:
+                    indices_verfahrgeschwindigkeit = [0]
+                df_list_.append(d.iloc[indices_verfahrgeschwindigkeit])
+            df_list = df_list_
+            label = [l + "_" + str(verfahrgeschwindigkeit) + "m-min" for l in label]
+            if not df_list:
+                combi_impossible = "yes"
+                print("No such combination available")
+            # print(df_list)
+
+    elif one_verfahrgeschwindigkeit == "n":
+
+        label_ = []
+        
+        if type(label) != list:
+            verfahrgeschwindigkeiten = df['Verfahrgeschwindigkeit'].unique()
+            for ver in verfahrgeschwindigkeiten:
+                verfahrgeschwindigkeit_where = df['Verfahrgeschwindigkeit'] == ver
+                indices_verfahrgeschwindigkeit = np.where(verfahrgeschwindigkeit_where)[0] # indices
+                if len(indices_verfahrgeschwindigkeit) == 0 and indices_verfahrgeschwindigkeit:
+                    indices_verfahrgeschwindigkeit = [0]
+                df_ = df.iloc[indices_verfahrgeschwindigkeit]
+                df_list.append(df_)
+                label_.append(ver)
+            label = [label + "_" + str(l) + "m-min" for l in label_]
+        else:
+            df_list_ = []
+            for i, d in enumerate(df_list):
+                verfahrgeschwindigkeiten = d['Verfahrgeschwindigkeit'].unique()
+                lab = []
+                for ver in verfahrgeschwindigkeiten:
+                    verfahrgeschwindigkeit_where = d['Verfahrgeschwindigkeit'] == ver
+                    indices_verfahrgeschwindigkeit = np.where(verfahrgeschwindigkeit_where)[0] # indices
+                    if len(indices_verfahrgeschwindigkeit) == 0 and indices_verfahrgeschwindigkeit:
+                        indices_verfahrgeschwindigkeit = [0]
+                    df_list_.append(d.iloc[indices_verfahrgeschwindigkeit])
+                    lab.append(ver)
+                label_.append([label[i] + "_" + str(l) + "m-min" for l in lab])
+            df_list = df_list_
+            label = reduce(operator.add, label_)
+            if not df_list:
+                combi_impossible = "yes"
+                print("No such combination available")
+
+
+    
     # print(df_list)
 
     if del_columns == "y":
@@ -572,12 +783,15 @@ def reduce_df(df, one_mat, material, one_condition, condition, one_gf, gfamount,
 
     # for i, d in enumerate(df_list):
     #     print("label:", label[i])
-    #     print(d[['Verfahrgeschwindigkeit [m/min]', 'Glasfaseranteil', 'Typ', 'Zeit']])
+    #     print(d[['Verfahrgeschwindigkeit', 'Glasfaseranteil', 'Typ', 'Zeit']])
 
-    if len(df_list) == 0:
-        return df, label
+    if combi_impossible == "yes":
+        return None, None
     else:
-        return df_list, label
+        if len(df_list) == 0:
+            return df, label
+        else:
+            return df_list, label
 
 
 
@@ -595,31 +809,34 @@ if __name__ == '__main__':
     material = 'HDPE'
 
     one_mT_or_oT = 'y'
-    trennmittelschicht = 'ja'
+    trennmittelschicht = 'oT' # 'mT' or 'oT' or None
 
-    one_condition = 'n' # 'y' or 'n'
+    one_condition = 'y' # 'y' or 'n'
     condition = 'rezykliert'
 
-    one_gf = 'y'        # 'y' or 'n'
+    one_zyklus = 'y'
+    zyklusanzahl = 1.0
+
+    one_gf = None        # 'y' or 'n' or None
     gfamount = 0.0
 
     one_type = 'n'      # 'y' or 'n'
     type_ = 'Dymid'
 
-    one_time = 'y'      # 'y' or 'n'
+    one_time = 'y'      # 'y' or 'n' or None
     time = 5.0
 
     # fuer zeitmessung
-    one_verfahrgeschwindigkeit = 'n'
+    one_verfahrgeschwindigkeit = None # 'y' or 'n' or None
     verfahrgeschwindigkeit = 2.5
 
     del_columns = 'n'   # 'y' or 'n'
-    columns_of_interest = ['Material', 'Glasfaseranteil', 'Typ', 'Verfahrgeschwindigkeit [m/min]', 'Zeit', 'KW_Wasser_mean', 'KW_Wasser_std', 'KW_Diodmethan_mean', 'KW_Diodmethan_std', 'KW_Ethylglykol_mean', 'KW_Ethylglykol_std', 'OE_total_mean', 'OE_total_std', 'OE_dispers_mean', 'OE_dispers_std', 'OE_polar_mean', 'OE_polar_std']
+    columns_of_interest = ['Material', 'Glasfaseranteil', 'Typ', 'Verfahrgeschwindigkeit', 'Zeit', 'KW_Wasser_mean', 'KW_Wasser_std', 'KW_Diodmethan_mean', 'KW_Diodmethan_std', 'KW_Ethylglykol_mean', 'KW_Ethylglykol_std', 'OE_total_mean', 'OE_total_std', 'OE_dispers_mean', 'OE_dispers_std', 'OE_polar_mean', 'OE_polar_std']
 
     # plotting settings
-    x = 'Verfahrgeschwindigkeit [m/min]'
-    y = 'OE_polar_mean' #'OE_total_mean'
-    yerr = 'OE_polar_std'
+    x = 'Verfahrgeschwindigkeit'
+    y = 'OE_total_mean' #'OE_total_mean'
+    yerr = 'OE_total_std'
 
     save_plot_path = "/Users/toffiefee/Documents/Uni_Bremen/Masterprojekt_2.0/Ergebnisse/Abbildungen/"
     save_plot_name = "" #"PA66_t5_polar"
@@ -631,64 +848,71 @@ if __name__ == '__main__':
 
     df = read_spreadsheet_xls(path_spreadsheet, filename_spreadsheet)
 
-    # df = load_KW_data(df, path_KW_txtfiles, no_of_KW_samples=no_of_KW_samples)
+    df = load_KW_data(df, path_KW_txtfiles, no_of_KW_samples=no_of_KW_samples)
 
-    df = load_zugversuch_data(df, path_Zug_xlsfiles)
+    # df = load_zugversuch_data(df, path_Zug_xlsfiles)
 
-    # datatypes = df.dtypes
-    # print(datatypes)
+    # delete all non-KW-value rows
+    OE_vals_where = df['OE_polar_mean'].notna()
+    indices_OE = np.where(OE_vals_where)[0] # indices
+    df = df.iloc[indices_OE]
 
-    # df, label = reduce_df(df, one_mat, material, one_condition, condition, one_gf, gfamount, one_type, type_, one_time, time, del_columns, columns_of_interest)
+    datatypes = df.dtypes
+    print(datatypes)
 
-    # # x = input(f'Enter X : {df.columns} \n')
-    # # y = input(f'Enter Y : {df.columns} \n')
+    df, label = reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condition, condition, one_gf, gfamount, one_type, type_, one_time, time, del_columns, columns_of_interest)
+
+    # print(type(df))
+    # x = input(f'Enter X : {df.columns} \n')
+    # y = input(f'Enter Y : {df.columns} \n')
 
     # print(df)
 
 
-    # cmap = matplotlib.cm.get_cmap('turbo_r')
-    # plt.figure(figsize=figsize)
+    cmap = matplotlib.cm.get_cmap('turbo_r')
+    plt.figure(figsize=figsize)
+
+    if df != None:
+        if type(df) != list:
+
+            # print(df[['Verfahrgeschwindigkeit', 'Glasfaseranteil', 'Typ', 'Zeit']])
+
+            color = cmap(0.3)
+
+            plt.scatter(df[x], df[y], label=label, marker='x')
+            if yerr != '' or yerr != None:
+                plt.errorbar(df[x], df[y], yerr=df[yerr], xerr=None, fmt='none', capsize=3.0, elinewidth=0.5, ecolor=color)
+            plt.xlabel(str(x))
+            plt.ylabel(str(y))
+            plt.legend()
+            plt.show()
+
+        else:
+
+            amount_colors = len(df)
+            colors = [cmap(c) for c in np.arange(0.05, 0.95, 1/(amount_colors+1))]
+
+            # print(df)
+            for i, d in enumerate(df):
+
+                # print(d[['Verfahrgeschwindigkeit', 'Glasfaseranteil', 'Typ', 'Zeit']])
+                print(d['Verfahrgeschwindigkeit'])
+                # # print(d)
+                # if d['Verfahrgeschwindigkeit'] == 0.0:
+                #     plt.hline(d[y],0,1)
+                # else:
+                    plt.scatter(d[x], d[y], label=label[i], marker='x', color=colors[i])
+                    if yerr != '' or yerr != None:
+                        plt.errorbar(d[x], d[y], yerr=d[yerr], xerr=None, fmt='none', capsize=3.0, elinewidth=0.5, ecolor=colors[i])
 
 
-    # if type(df) != list:
+            plt.xlabel(str(x))
+            plt.ylabel(str(y))
+            plt.legend(fontsize='small', loc="center left", bbox_to_anchor=(1.0, 0.5))
+        
+        
 
-    #     # print(df[['Verfahrgeschwindigkeit [m/min]', 'Glasfaseranteil', 'Typ', 'Zeit']])
-
-    #     color = cmap(0.3)
-
-    #     plt.scatter(df[x], df[y], label=label, marker='x')
-    #     if yerr != '' or yerr != None:
-    #         plt.errorbar(df[x], df[y], yerr=df[yerr], xerr=None, fmt='none', capsize=3.0, elinewidth=0.5, ecolor=color)
-    #     plt.xlabel(str(x))
-    #     plt.ylabel(str(y))
-    #     plt.legend()
-    #     plt.show()
-
-    # else:
-
-    #     amount_colors = len(df)
-    #     colors = [cmap(c) for c in np.arange(0.05, 0.95, 1/amount_colors)]
-
-    #     # print(df)
-    #     for i, d in enumerate(df):
-
-    #         # print(d[['Verfahrgeschwindigkeit [m/min]', 'Glasfaseranteil', 'Typ', 'Zeit']])
-    #         print(d['Verfahrgeschwindigkeit [m/min]'])
-    #         # if d['Verfahrgeschwindigkeit [m/min]'] == 0.0:
-    #         #     plt.hline(d[y],0,1)
-    #         # else:
-    #         plt.scatter(d[x], d[y], label=label[i], marker='x', color=colors[i])
-    #         if yerr != '' or yerr != None:
-    #             plt.errorbar(d[x], d[y], yerr=d[yerr], xerr=None, fmt='none', capsize=3.0, elinewidth=0.5, ecolor=colors[i])
-
-
-    #     plt.xlabel(str(x))
-    #     plt.ylabel(str(y))
-    #     plt.legend(fontsize='small', loc="center left", bbox_to_anchor=(1.0, 0.5))
-    
-    
-
-    # plt.tight_layout()
-    # # if save_plot_path != "" or save_plot_path != None and save_plot_name != "" or save_plot_name != None:
-    # #     plt.savefig(save_plot_path + save_plot_name + ".png", dpi=300)
-    # plt.show()
+        plt.tight_layout()
+        # if save_plot_path != "" or save_plot_path != None and save_plot_name != "" or save_plot_name != None:
+        #     plt.savefig(save_plot_path + save_plot_name + ".png", dpi=300)
+        plt.show()
