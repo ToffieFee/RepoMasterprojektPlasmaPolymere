@@ -808,7 +808,7 @@ if __name__ == '__main__':
     one_mat = 'y'       # 'y' or 'n'
     material = 'HDPE'
 
-    one_mT_or_oT = 'y'
+    one_mT_or_oT = 'n'
     trennmittelschicht = 'oT' # 'mT' or 'oT' or None
 
     one_condition = 'y' # 'y' or 'n'
@@ -837,6 +837,9 @@ if __name__ == '__main__':
     x = 'Verfahrgeschwindigkeit'
     y = 'OE_total_mean' #'OE_total_mean'
     yerr = 'OE_total_std'
+
+    x_min = 0
+    x_max = 21
 
     save_plot_path = "/Users/toffiefee/Documents/Uni_Bremen/Masterprojekt_2.0/Ergebnisse/Abbildungen/"
     save_plot_name = "" #"PA66_t5_polar"
@@ -896,16 +899,17 @@ if __name__ == '__main__':
             for i, d in enumerate(df):
 
                 # print(d[['Verfahrgeschwindigkeit', 'Glasfaseranteil', 'Typ', 'Zeit']])
-                print(d['Verfahrgeschwindigkeit'])
-                # # print(d)
-                # if d['Verfahrgeschwindigkeit'] == 0.0:
-                #     plt.hline(d[y],0,1)
-                # else:
-                    plt.scatter(d[x], d[y], label=label[i], marker='x', color=colors[i])
-                    if yerr != '' or yerr != None:
-                        plt.errorbar(d[x], d[y], yerr=d[yerr], xerr=None, fmt='none', capsize=3.0, elinewidth=0.5, ecolor=colors[i])
+                # print(d['Verfahrgeschwindigkeit'])
+                referenz = d[d['Verfahrgeschwindigkeit'] == 0.0]
+                anderes = d[d['Verfahrgeschwindigkeit'] != 0.0]
+                if referenz.all != None:
+                    plt.axhline(y=float(referenz[y]), color=colors[i])
+                    plt.fill_between([x_min, x_max], float(referenz[y]) - float(referenz[yerr]), float(referenz[y]) + float(referenz[yerr]), color=colors[i], alpha=0.2, edgecolor='none')
+                plt.scatter(anderes[x], anderes[y], label=label[i], marker='x', color=colors[i])
+                if yerr != '' or yerr != None:
+                    plt.errorbar(anderes[x], anderes[y], yerr=anderes[yerr], xerr=None, fmt='none', capsize=3.0, elinewidth=0.5, ecolor=colors[i])
 
-
+            plt.xlim(x_min, x_max)
             plt.xlabel(str(x))
             plt.ylabel(str(y))
             plt.legend(fontsize='small', loc="center left", bbox_to_anchor=(1.0, 0.5))
