@@ -69,6 +69,8 @@ def load_zugversuch_data(df, path):
     for i, samplename in enumerate(df.iterrows()):
         zug_name = df["Zug_Bezeichnung"].iloc[i]
         zug_date = df["Zug_Datum"].iloc[i]
+        print(zug_date)
+        print(zug_name)
         # print(type(zug_name))
         if type(zug_name) == str:
             # print("row!######",row)
@@ -93,7 +95,8 @@ def load_zugversuch_data(df, path):
 
     return df
 
-def import_KW_txtfile(path, samplename, no_of_samples=3):
+
+def import_KW_txtfile(path, ordner_name, samplename, no_of_samples=3):
     """ Importieren der Messergebnisse der Kontaktwinkelmessung.
 
     Parameters
@@ -126,7 +129,7 @@ def import_KW_txtfile(path, samplename, no_of_samples=3):
 
 
     
-    f = path + samplename + iterate_samples[0] + ".txt"
+    f = path + ordner_name + "/" + samplename + iterate_samples[0] + ".txt"
     # print("*****F*****:", f)
 
     if exists(f):
@@ -144,7 +147,7 @@ def import_KW_txtfile(path, samplename, no_of_samples=3):
             # if exists(i) == False:
             #     break
 
-            check = np.loadtxt(path + samplename + i + ".txt", dtype=str, encoding="cp1252", delimiter="\t", skiprows=7, max_rows=1)
+            check = np.loadtxt(path + ordner_name + "/" + samplename + i + ".txt", dtype=str, encoding="cp1252", delimiter="\t", skiprows=7, max_rows=1)
             line = None
             if check[0] == 'Remarks':
                 line = 1
@@ -154,17 +157,17 @@ def import_KW_txtfile(path, samplename, no_of_samples=3):
                 print("There is something unusual in file ", samplename, i)
             
             if line == 0 or line == 1:
-                KW_Wasser_ = np.loadtxt(path + samplename + i + ".txt", dtype=str, encoding="cp1252", delimiter="\t", skiprows=(9+line), max_rows=1)
+                KW_Wasser_ = np.loadtxt(path + ordner_name + "/" + samplename + i + ".txt", dtype=str, encoding="cp1252", delimiter="\t", skiprows=(9+line), max_rows=1)
                 KW_Wasser.append([float(KW_Wasser_[7]), float(KW_Wasser_[8])])
-                KW_Diodmethan_ = np.loadtxt(path + samplename + i + ".txt", dtype=str, delimiter="\t", encoding="cp1252", skiprows=(10+line), max_rows=1)
+                KW_Diodmethan_ = np.loadtxt(path + ordner_name + "/" + samplename + i + ".txt", dtype=str, delimiter="\t", encoding="cp1252", skiprows=(10+line), max_rows=1)
                 KW_Diodmethan.append([float(KW_Diodmethan_[7]), float(KW_Diodmethan_[8])])
-                KW_Ethylglykol_ = np.loadtxt(path + samplename + i + ".txt", dtype=str, delimiter="\t", encoding="cp1252", skiprows=(11+line), max_rows=1)
+                KW_Ethylglykol_ = np.loadtxt(path + ordner_name + "/" + samplename + i + ".txt", dtype=str, delimiter="\t", encoding="cp1252", skiprows=(11+line), max_rows=1)
                 KW_Ethylglykol.append([float(KW_Ethylglykol_[7]), float(KW_Ethylglykol_[8])])
-                OE_total_ = np.loadtxt(path + samplename + i + ".txt", dtype=str, delimiter="\t", encoding="cp1252", skiprows=(16+line), max_rows=1)
+                OE_total_ = np.loadtxt(path + ordner_name + "/" + samplename + i + ".txt", dtype=str, delimiter="\t", encoding="cp1252", skiprows=(16+line), max_rows=1)
                 OE_total.append(float(list(np.char.split(OE_total_[1]).flatten())[0][0]))
-                OE_dispers_ = np.loadtxt(path + samplename + i + ".txt", dtype=str, delimiter="\t", encoding="cp1252", skiprows=(17+line), max_rows=1)
+                OE_dispers_ = np.loadtxt(path + ordner_name + "/" + samplename + i + ".txt", dtype=str, delimiter="\t", encoding="cp1252", skiprows=(17+line), max_rows=1)
                 OE_dispers.append(float(list(np.char.split(OE_dispers_[1]).flatten())[0][0]))
-                OE_polar_ = np.loadtxt(path + samplename + i + ".txt", dtype=str, delimiter="\t", encoding="cp1252", skiprows=(18+line), max_rows=1)
+                OE_polar_ = np.loadtxt(path + ordner_name + "/" + samplename + i + ".txt", dtype=str, delimiter="\t", encoding="cp1252", skiprows=(18+line), max_rows=1)
                 OE_polar.append(float(list(np.char.split(OE_polar_[1]).flatten())[0][0]))
 
         # print(KW_Wasser)
@@ -209,8 +212,21 @@ def load_KW_data(df, path, no_of_KW_samples=3):
 
     for samplename, _ in df.iterrows():
         
+        # ordner name:
+        # if "_C2" in samplename:
+        #     ordner_name = samplename.split("_C2")
+        if "_Vfg" in samplename:
+            ordner_name = samplename.split("_Vfg")
+        elif "_Referenz" in samplename:
+            ordner_name = samplename.split("_Referenz")
+        else:
+            print("There is neither _C2 nor _Vfg nor _Referenz in the name of the samplename, ", samplename)
+        
+        ordner_name = ordner_name[0]
+        # print(type(ordner_name))
+
         # print("Current sample: ", samplename)
-        KW_Wasser, KW_Diodmethan, KW_Ethylglykol, OE_total, OE_dispers, OE_polar = import_KW_txtfile(path, samplename, no_of_samples=no_of_KW_samples)
+        KW_Wasser, KW_Diodmethan, KW_Ethylglykol, OE_total, OE_dispers, OE_polar = import_KW_txtfile(path, ordner_name, samplename, no_of_samples=no_of_KW_samples)
 
         if KW_Wasser == False:
             print("Couldn't find a KW-resultfile for sample ", samplename)
@@ -570,25 +586,32 @@ if __name__ == '__main__':
     path_spreadsheet = "/Users/toffiefee/Documents/Uni_Bremen/Masterprojekt_2.0/Ergebnisse/"
     filename_spreadsheet = "Proben_Uebersichts_Tabelle-Dokumentation"
 
-    path_KW_txtfiles = "/Users/toffiefee/Documents/Uni_Bremen/Masterprojekt_2.0/Ergebnisse/Kontaktwinkelmessungen/AD/"
+    path_KW_txtfiles = "/Users/toffiefee/Documents/Uni_Bremen/Masterprojekt_2.0/Ergebnisse/Kontaktwinkelmessungen/AD_neu/"
     no_of_KW_samples = 3
 
     path_Zug_xlsfiles = "/Users/toffiefee/Documents/Uni_Bremen/Masterprojekt_2.0/Ergebnisse/Zugversuch/"
 
-    one_mat = 'n'       # 'y' or 'n'
-    material = 'PA66'
+    one_mat = 'y'       # 'y' or 'n'
+    material = 'HDPE'
+
+    one_mT_or_oT = 'y'
+    trennmittelschicht = 'ja'
 
     one_condition = 'n' # 'y' or 'n'
     condition = 'rezykliert'
 
-    one_gf = 'n'        # 'y' or 'n'
+    one_gf = 'y'        # 'y' or 'n'
     gfamount = 0.0
 
     one_type = 'n'      # 'y' or 'n'
     type_ = 'Dymid'
 
-    one_time = 'n'      # 'y' or 'n'
+    one_time = 'y'      # 'y' or 'n'
     time = 5.0
+
+    # fuer zeitmessung
+    one_verfahrgeschwindigkeit = 'n'
+    verfahrgeschwindigkeit = 2.5
 
     del_columns = 'n'   # 'y' or 'n'
     columns_of_interest = ['Material', 'Glasfaseranteil', 'Typ', 'Verfahrgeschwindigkeit [m/min]', 'Zeit', 'KW_Wasser_mean', 'KW_Wasser_std', 'KW_Diodmethan_mean', 'KW_Diodmethan_std', 'KW_Ethylglykol_mean', 'KW_Ethylglykol_std', 'OE_total_mean', 'OE_total_std', 'OE_dispers_mean', 'OE_dispers_std', 'OE_polar_mean', 'OE_polar_std']
@@ -617,8 +640,8 @@ if __name__ == '__main__':
 
     # df, label = reduce_df(df, one_mat, material, one_condition, condition, one_gf, gfamount, one_type, type_, one_time, time, del_columns, columns_of_interest)
 
-    # x = input(f'Enter X : {df.columns} \n')
-    # y = input(f'Enter Y : {df.columns} \n')
+    # # x = input(f'Enter X : {df.columns} \n')
+    # # y = input(f'Enter Y : {df.columns} \n')
 
     # print(df)
 
@@ -651,12 +674,12 @@ if __name__ == '__main__':
 
     #         # print(d[['Verfahrgeschwindigkeit [m/min]', 'Glasfaseranteil', 'Typ', 'Zeit']])
     #         print(d['Verfahrgeschwindigkeit [m/min]'])
-    #         if d['Verfahrgeschwindigkeit [m/min]'] == 0.0:
-    #             plt.hline(d[y],0,1)
-    #         else:
-    #             plt.scatter(d[x], d[y], label=label[i], marker='x', color=colors[i])
-    #             if yerr != '' or yerr != None:
-    #                 plt.errorbar(d[x], d[y], yerr=d[yerr], xerr=None, fmt='none', capsize=3.0, elinewidth=0.5, ecolor=colors[i])
+    #         # if d['Verfahrgeschwindigkeit [m/min]'] == 0.0:
+    #         #     plt.hline(d[y],0,1)
+    #         # else:
+    #         plt.scatter(d[x], d[y], label=label[i], marker='x', color=colors[i])
+    #         if yerr != '' or yerr != None:
+    #             plt.errorbar(d[x], d[y], yerr=d[yerr], xerr=None, fmt='none', capsize=3.0, elinewidth=0.5, ecolor=colors[i])
 
 
     #     plt.xlabel(str(x))
