@@ -559,7 +559,7 @@ def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condi
                 df_ = df.iloc[indices_type]
                 df_list.append(df_)
                 label_.append(t)
-            label = [label + "_" + l for l in label_]
+            label = [label + "_" + str(l) for l in label_]
         else:
             df_list_ = []
             for i, d in enumerate(df_list):
@@ -572,7 +572,7 @@ def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condi
                         indices_type = [0]
                     df_list_.append(d.iloc[indices_type])
                     lab.append(t)
-                label_.append([label[i] + "_" + l for l in lab])
+                label_.append([label[i] + "_" + str(l) for l in lab])
             # print(df_list_)
             df_list = df_list_
             label = reduce(operator.add, label_)
@@ -671,7 +671,7 @@ def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condi
                 print("No such combination available")
             # print(df_list)
 
-    elif one_verfahrgeschwindigkeit == "n":
+    elif one_zyklus == "n":
 
         label_ = []
         
@@ -806,18 +806,15 @@ if __name__ == '__main__':
     path_Zug_xlsfiles = "/Users/toffiefee/Documents/Uni_Bremen/Masterprojekt_2.0/Ergebnisse/Zugversuch/"
 
     one_mat = 'y'       # 'y' or 'n'
-    material = 'HDPE'
-
-    one_mT_or_oT = 'n'
-    trennmittelschicht = 'oT' # 'mT' or 'oT' or None
+    material = 'PP'
 
     one_condition = 'y' # 'y' or 'n'
-    condition = 'rezykliert'
+    condition = 'frisch'
 
-    one_zyklus = 'y'
-    zyklusanzahl = 1.0
+    one_mT_or_oT = None # 'mT' or 'oT' or None
+    trennmittelschicht = 'mT' 
 
-    one_gf = None        # 'y' or 'n' or None
+    one_gf = 'n'        # 'y' or 'n' or None
     gfamount = 0.0
 
     one_type = 'n'      # 'y' or 'n'
@@ -825,6 +822,9 @@ if __name__ == '__main__':
 
     one_time = 'y'      # 'y' or 'n' or None
     time = 5.0
+
+    one_zyklus = None    # 'y' or 'n' or None
+    zyklusanzahl = 1.0
 
     # fuer zeitmessung
     one_verfahrgeschwindigkeit = None # 'y' or 'n' or None
@@ -839,7 +839,7 @@ if __name__ == '__main__':
     yerr = 'OE_total_std'
 
     x_min = 0
-    x_max = 21
+    x_max = 41
 
     save_plot_path = "/Users/toffiefee/Documents/Uni_Bremen/Masterprojekt_2.0/Ergebnisse/Abbildungen/"
     save_plot_name = "" #"PA66_t5_polar"
@@ -852,6 +852,14 @@ if __name__ == '__main__':
     df = read_spreadsheet_xls(path_spreadsheet, filename_spreadsheet)
 
     df = load_KW_data(df, path_KW_txtfiles, no_of_KW_samples=no_of_KW_samples)
+    df = df.drop('HDPE_rezykliert_mT_C2_Referenz')
+    df = df.drop('PP_Natur_Vfg10_quer_Homogenitaet_hinten')
+    df = df.drop('PP_Natur_Vfg10_quer_Homogenitaet_Mitte')
+    df = df.drop('PP_Natur_Vfg10_quer_Homogenitaet_vorne')
+    df = df.drop('PP_Natur_Vfg10_laengs_Homogenitaet_rechts')
+    df = df.drop('PP_Natur_Vfg10_laengs_Homogenitaet_links')
+    df = df.drop('PP_Natur_Vfg20_vorBehandlungabgewischt')
+    
 
     # df = load_zugversuch_data(df, path_Zug_xlsfiles)
 
@@ -860,10 +868,16 @@ if __name__ == '__main__':
     indices_OE = np.where(OE_vals_where)[0] # indices
     df = df.iloc[indices_OE]
 
-    datatypes = df.dtypes
-    print(datatypes)
+    # datatypes = df.dtypes
+    # print(datatypes)
 
     df, label = reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condition, condition, one_gf, gfamount, one_type, type_, one_time, time, del_columns, columns_of_interest)
+
+    if type(label) == list:
+        for i, l in enumerate(label):
+            label[i] = l.replace("_nip", "")
+    else:
+        label = label.replace("_nip", "")
 
     # print(type(df))
     # x = input(f'Enter X : {df.columns} \n')
@@ -902,7 +916,8 @@ if __name__ == '__main__':
                 # print(d['Verfahrgeschwindigkeit'])
                 referenz = d[d['Verfahrgeschwindigkeit'] == 0.0]
                 anderes = d[d['Verfahrgeschwindigkeit'] != 0.0]
-                if referenz.all != None:
+                # print(referenz)
+                if referenz.empty == False:
                     plt.axhline(y=float(referenz[y]), color=colors[i])
                     plt.fill_between([x_min, x_max], float(referenz[y]) - float(referenz[yerr]), float(referenz[y]) + float(referenz[yerr]), color=colors[i], alpha=0.2, edgecolor='none')
                 plt.scatter(anderes[x], anderes[y], label=label[i], marker='x', color=colors[i])
