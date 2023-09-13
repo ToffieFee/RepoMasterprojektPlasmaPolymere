@@ -6,7 +6,6 @@ import openpyxl
 import matplotlib
 import matplotlib.pyplot as plt
 import operator
-from read_xls_zugversuche import read_xls_zugversuch_statistik, read_xls_zugversuch_verlaeufe, plot_zugversuch_verlaeufe
 from functools import reduce
 matplotlib.rcParams['mathtext.fontset'] = 'stix'
 matplotlib.rcParams['font.family'] = 'STIXGeneral'
@@ -69,8 +68,8 @@ def load_zugversuch_data(df, path):
     for i, samplename in enumerate(df.iterrows()):
         zug_name = df["Zug_Bezeichnung"].iloc[i]
         zug_date = df["Zug_Datum"].iloc[i]
-        print(zug_date)
-        print(zug_name)
+        # print(zug_date)
+        # print(zug_name)
         # print(type(zug_name))
         if type(zug_name) == str:
             # print("row!######",row)
@@ -79,8 +78,10 @@ def load_zugversuch_data(df, path):
             zug_date = str(zug_date)
             zug_date = zug_date[0:-9]
             zug_date = zug_date.split("-")
+            # print(zug_date)
+            # print(samplename[0])
             zug_date = str(zug_date[2] + "." + zug_date[1] + "." + zug_date[0])
-            print(samplename[0])
+            # print(samplename[0])
             Fmax, eF, tmax, S0 = read_xls_zugversuch_statistik(path, zug_date, str(zug_name))
             # print(type(samplename[0]))
             
@@ -92,6 +93,16 @@ def load_zugversuch_data(df, path):
             df.at[samplename[0], 'tmax in MPa std'] = tmax[1]
             df.at[samplename[0], 'S0 in mm² mean'] = S0[0]
             df.at[samplename[0], 'S0 in mm² std'] = S0[1]
+
+        else:
+            df.at[samplename[0], 'Fmax in N mean'] = np.nan
+            df.at[samplename[0], 'Fmax in N std'] = np.nan
+            df.at[samplename[0], 'e-F max in mm mean'] = np.nan
+            df.at[samplename[0], 'e-F max in mm std'] = np.nan
+            df.at[samplename[0], 'tmax in MPa mean'] = np.nan
+            df.at[samplename[0], 'tmax in MPa std'] = np.nan
+            df.at[samplename[0], 'S0 in mm² mean'] = np.nan
+            df.at[samplename[0], 'S0 in mm² std'] = np.nan
 
     return df
 
@@ -290,7 +301,7 @@ def read_spreadsheet_xls(path, filename):
     return df
 
 
-def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condition, condition, one_gf, gfamount, one_type, type_, one_time, time, del_columns, columns_of_interest):
+def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condition, condition, one_gf, gfamount, one_type, type_, one_time, time, one_leistung, leistung, one_precursor, precursor, one_energieeintrag, del_columns, columns_of_interest):
 
     df_list = []
     combi_impossible = "no"
@@ -545,7 +556,7 @@ def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condi
                 combi_impossible = "yes"
                 print("No such combination available")
 
-    else:
+    elif one_type == 'n':
 
         label_ = []
         
@@ -806,40 +817,50 @@ if __name__ == '__main__':
     path_Zug_xlsfiles = "/Users/toffiefee/Documents/Uni_Bremen/Masterprojekt_2.0/Ergebnisse/Zugversuch/"
 
     one_mat = 'y'       # 'y' or 'n'
-    material = 'PP'
+    material = 'HDPE'
 
-    one_condition = 'y' # 'y' or 'n'
+    one_condition = 'n' # 'y' or 'n'
     condition = 'frisch'
 
-    one_mT_or_oT = None # 'mT' or 'oT' or None
+    one_mT_or_oT = 'n' # 'mT' or 'oT' or None
     trennmittelschicht = 'mT' 
 
-    one_gf = 'n'        # 'y' or 'n' or None
+    one_gf = None       # 'y' or 'n' or None
     gfamount = 0.0
 
-    one_type = 'n'      # 'y' or 'n'
+    one_type = None      # 'y' or 'n' or None
     type_ = 'Dymid'
 
-    one_time = 'y'      # 'y' or 'n' or None
+    one_time = None      # 'y' or 'n' or None
     time = 5.0
 
-    one_zyklus = None    # 'y' or 'n' or None
+    one_zyklus = 'y'    # 'y' or 'n' or None
     zyklusanzahl = 1.0
 
     # fuer zeitmessung
-    one_verfahrgeschwindigkeit = None # 'y' or 'n' or None
+    one_verfahrgeschwindigkeit = 'y' # 'y' or 'n' or None
     verfahrgeschwindigkeit = 2.5
+
+    one_energieeintrag = 'y' # 'y' or None
+
+    # fuer ND:
+    one_leistung = 'n' # 'y' or 'n' or None
+    leistung = 1500
+
+    one_precursor = 'y' # 'y' or 'n' or None
+    precursor = "AuE"
 
     del_columns = 'n'   # 'y' or 'n'
     columns_of_interest = ['Material', 'Glasfaseranteil', 'Typ', 'Verfahrgeschwindigkeit', 'Zeit', 'KW_Wasser_mean', 'KW_Wasser_std', 'KW_Diodmethan_mean', 'KW_Diodmethan_std', 'KW_Ethylglykol_mean', 'KW_Ethylglykol_std', 'OE_total_mean', 'OE_total_std', 'OE_dispers_mean', 'OE_dispers_std', 'OE_polar_mean', 'OE_polar_std']
 
     # plotting settings
-    x = 'Verfahrgeschwindigkeit'
-    y = 'OE_total_mean' #'OE_total_mean'
-    yerr = 'OE_total_std'
+    x = 'Zeit'
+    y = 'OE_polar_mean' #'OE_total_mean'
+    yerr = 'OE_polar_std'
 
-    x_min = 0
+    x_min = 4
     x_max = 41
+    scale = 'log'
 
     save_plot_path = "/Users/toffiefee/Documents/Uni_Bremen/Masterprojekt_2.0/Ergebnisse/Abbildungen/"
     save_plot_name = "" #"PA66_t5_polar"
@@ -850,8 +871,6 @@ if __name__ == '__main__':
 ##################################################################################################
 
     df = read_spreadsheet_xls(path_spreadsheet, filename_spreadsheet)
-
-    df = load_KW_data(df, path_KW_txtfiles, no_of_KW_samples=no_of_KW_samples)
     df = df.drop('HDPE_rezykliert_mT_C2_Referenz')
     df = df.drop('PP_Natur_Vfg10_quer_Homogenitaet_hinten')
     df = df.drop('PP_Natur_Vfg10_quer_Homogenitaet_Mitte')
@@ -859,8 +878,39 @@ if __name__ == '__main__':
     df = df.drop('PP_Natur_Vfg10_laengs_Homogenitaet_rechts')
     df = df.drop('PP_Natur_Vfg10_laengs_Homogenitaet_links')
     df = df.drop('PP_Natur_Vfg20_vorBehandlungabgewischt')
-    
+    df = df.drop('längs (y)')
+    df = df.drop('quer (x); nicht werten')
+    df = df.drop('HDPE_quer_vorne_Vfg20')
+    df = df.drop('HDPE_quer_Mitte_Vfg20')
+    df = df.drop('HDPE_quer_hinten_Vfg20')
+    df = df.drop('HDPE_quer_vorne_Vfg5')
+    df = df.drop('HDPE_quer_Mitte_Vfg5')
+    df = df.drop('HDPE_quer_hinten_Vfg5')
+    df = df.drop('HDPE_quer_vorne_Vfg10')
+    df = df.drop('HDPE_quer_Mitte_Vfg10')
+    df = df.drop('HDPE_quer_hinten_Vfg10')
+    df = df.drop('HDPE_quer_vorne_Vfg2-5')
+    df = df.drop('HDPE_quer_Mitte_Vfg2-5')
+    df = df.drop('HDPE_quer_hinten_Vfg2-5')
+    df = df.drop('HDPE_quer_Mitte_abgewischt_Vfg2-5')
+    df = df.drop('runde Proben, Charakterisierung')
+    df = df.drop('PP_St_Klebuebung_Tabea')
+    df = df.drop('PP_St_Klebuebung_Feline')
+    df = df.drop('PP_unbehandelt_Klebuebung_Tabea')
+    df = df.drop('PP_unbehandelt_Klebuebung_Feline')
+    df = df.drop('PP_unbehandelt_Klebeeinweisung')
+    df = df.drop('PP_5m-min_Klebeeinweisung')
+    df = df.drop('PP_20m-min_Klebeeinweisung')
+    df = df.drop('PP_40m-min_Klebeeinweisung')
 
+    df = df.drop('Kleben > KW bei 1m-min 1')
+    df = df.drop('Kleben > KW bei 1m-min 2')
+
+    # delete all ND rows
+    df = df[~df.index.str.contains("ND")]
+
+    df = load_KW_data(df, path_KW_txtfiles, no_of_KW_samples=no_of_KW_samples)
+        
     # df = load_zugversuch_data(df, path_Zug_xlsfiles)
 
     # delete all non-KW-value rows
@@ -868,10 +918,30 @@ if __name__ == '__main__':
     indices_OE = np.where(OE_vals_where)[0] # indices
     df = df.iloc[indices_OE]
 
+    # # delete all non-Zug-value rows
+    # Zug_vals_where = df['Fmax in N mean'].notna()
+    # indices_Zug = np.where(Zug_vals_where)[0] # indices
+    # df = df.iloc[indices_Zug]
+
     # datatypes = df.dtypes
     # print(datatypes)
 
-    df, label = reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condition, condition, one_gf, gfamount, one_type, type_, one_time, time, del_columns, columns_of_interest)
+    # print(df)
+
+    df, label = reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condition, condition, one_gf, gfamount, one_type, type_, one_time, time, one_leistung, leistung, one_precursor, precursor, one_energieeintrag, del_columns, columns_of_interest)
+    # print(df)
+
+    # Find indices of empty DataFrames
+    empty_indices = []
+    for idx, d in enumerate(df):
+        if d.empty:
+            empty_indices.append(idx)
+
+    for i in empty_indices:
+        del label[i]
+    df = [df for df in df if not df.empty]
+
+    # print(df)
 
     if type(label) == list:
         for i, l in enumerate(label):
@@ -883,7 +953,7 @@ if __name__ == '__main__':
     # x = input(f'Enter X : {df.columns} \n')
     # y = input(f'Enter Y : {df.columns} \n')
 
-    # print(df)
+    print(df)
 
 
     cmap = matplotlib.cm.get_cmap('turbo_r')
@@ -916,22 +986,26 @@ if __name__ == '__main__':
                 # print(d['Verfahrgeschwindigkeit'])
                 referenz = d[d['Verfahrgeschwindigkeit'] == 0.0]
                 anderes = d[d['Verfahrgeschwindigkeit'] != 0.0]
+                # anderes = d[d['Verfahrgeschwindigkeit'] == 0.0]
+                # referenz = pd.DataFrame()
                 # print(referenz)
                 if referenz.empty == False:
                     plt.axhline(y=float(referenz[y]), color=colors[i])
                     plt.fill_between([x_min, x_max], float(referenz[y]) - float(referenz[yerr]), float(referenz[y]) + float(referenz[yerr]), color=colors[i], alpha=0.2, edgecolor='none')
+                # print(anderes[x], anderes[y])
                 plt.scatter(anderes[x], anderes[y], label=label[i], marker='x', color=colors[i])
                 if yerr != '' or yerr != None:
                     plt.errorbar(anderes[x], anderes[y], yerr=anderes[yerr], xerr=None, fmt='none', capsize=3.0, elinewidth=0.5, ecolor=colors[i])
 
-            plt.xlim(x_min, x_max)
+            # plt.xlim(x_min, x_max)
             plt.xlabel(str(x))
             plt.ylabel(str(y))
+            plt.xscale(scale)
             plt.legend(fontsize='small', loc="center left", bbox_to_anchor=(1.0, 0.5))
         
         
 
         plt.tight_layout()
-        # if save_plot_path != "" or save_plot_path != None and save_plot_name != "" or save_plot_name != None:
-        #     plt.savefig(save_plot_path + save_plot_name + ".png", dpi=300)
+        if save_plot_path != "" or save_plot_path != None and save_plot_name != "" or save_plot_name != None:
+            plt.savefig(save_plot_path + save_plot_name + ".png", dpi=300)
         plt.show()
