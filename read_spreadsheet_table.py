@@ -301,7 +301,7 @@ def read_spreadsheet_xls(path, filename):
     return df
 
 
-def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condition, condition, one_gf, gfamount, one_type, type_, one_time, time, one_leistung, leistung, one_precursor, precursor, one_energieeintrag, del_columns, columns_of_interest):
+def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condition, condition, one_gf, gfamount, one_type, type_, one_time, time, one_leistung, leistung, one_precursor, precursor, one_energieeintrag, energieeintrag, del_columns, columns_of_interest):
 
     df_list = []
     combi_impossible = "no"
@@ -315,7 +315,7 @@ def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condi
 
         material_where = df['Material'] == material
         indices_mat = np.where(material_where)[0] # indices
-        if len(indices_mat) == 0 and indices_mat:
+        if len(indices_mat) == 0 and indices_mat.size > 0:
             indices_mat = [0]
         df = df.iloc[indices_mat]
 
@@ -328,7 +328,7 @@ def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condi
         for mat in materialtypes:
             material_where = df['Material'] == mat
             indices_mat = np.where(material_where)[0] # indices
-            if len(indices_mat) == 0 and indices_mat:
+            if len(indices_mat) == 0 and indices_mat.size > 0:
                 indices_mat = [0]
             df_ = df.iloc[indices_mat]
             df_list.append(df_)
@@ -348,7 +348,7 @@ def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condi
         if type(label) != list:
             condition_where = df['Zustand'] == condition
             indices_cond = np.where(condition_where)[0] # indices
-            if len(indices_cond) == 0 and indices_cond:
+            if len(indices_cond) == 0 and indices_cond.size > 0:
                 indices_cond = [0]
             df = df.iloc[indices_cond]
             label = label + "_" + condition
@@ -358,7 +358,7 @@ def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condi
             for d in df_list:
                 condition_where = d['Zustand'] == condition
                 indices_cond = np.where(condition_where)[0] # indices
-                if len(indices_cond) == 0 and indices_cond:
+                if len(indices_cond) == 0 and indices_cond.size > 0:
                     indices_cond = [0]
                 df_list_.append(d.iloc[indices_cond])
             df_list = df_list_
@@ -376,7 +376,7 @@ def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condi
             for cond in conditiontypes:
                 condition_where = df['Zustand'] == cond
                 indices_cond = np.where(condition_where)[0] # indices
-                if len(indices_cond) == 0 and indices_cond:
+                if len(indices_cond) == 0 and indices_cond.size > 0:
                     indices_cond = [0]
                 df_ = df.iloc[indices_cond]
                 df_list.append(df_)
@@ -390,7 +390,7 @@ def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condi
                 for cond in conditiontypes:
                     condition_where = d['Zustand'] == cond
                     indices_cond = np.where(condition_where)[0] # indices
-                    if len(indices_cond) == 0 and indices_cond:
+                    if len(indices_cond) == 0 and indices_cond.size > 0:
                         indices_cond = [0]
                     df_list_.append(d.iloc[indices_cond])
                     lab.append(cond)
@@ -409,7 +409,7 @@ def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condi
         if type(label) != list:
             trennmittelschicht_where = df['Trennmittelschicht'] == trennmittelschicht
             indices_trennmittelschicht = np.where(trennmittelschicht_where)[0] # indices
-            if len(indices_trennmittelschicht) == 0 and indices_trennmittelschicht:
+            if len(indices_trennmittelschicht) == 0 and indices_trennmittelschicht.size > 0:
                 indices_trennmittelschicht = [0]
             df = df.iloc[indices_trennmittelschicht]
             label = label + "_" + str(trennmittelschicht)
@@ -418,7 +418,7 @@ def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condi
             for d in df_list:
                 trennmittelschicht_where = d['Trennmittelschicht'] == trennmittelschicht
                 indices_trennmittelschicht = np.where(trennmittelschicht_where)[0] # indices
-                if len(indices_trennmittelschicht) == 0 and indices_trennmittelschicht:
+                if len(indices_trennmittelschicht) == 0 and indices_trennmittelschicht.size > 0:
                     indices_trennmittelschicht = [0]
                 df_list_.append(d.iloc[indices_trennmittelschicht])
             df_list = df_list_
@@ -436,7 +436,7 @@ def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condi
             for tr in trennmittelschichten:
                 trennmittelschicht_where = df['Trennmittelschicht'] == tr
                 indices_trennmittelschicht = np.where(trennmittelschicht_where)[0] # indices
-                if len(indices_trennmittelschicht) == 0 and indices_trennmittelschicht:
+                if len(indices_trennmittelschicht) == 0 and indices_trennmittelschicht.size > 0:
                     indices_trennmittelschicht = [0]
                 df_ = df.iloc[indices_trennmittelschicht]
                 df_list.append(df_)
@@ -450,7 +450,7 @@ def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condi
                 for tr in trennmittelschichten:
                     trennmittelschicht_where = d['Trennmittelschicht'] == tr
                     indices_trennmittelschicht = np.where(trennmittelschicht_where)[0] # indices
-                    if len(indices_trennmittelschicht) == 0 and indices_trennmittelschicht:
+                    if len(indices_trennmittelschicht) == 0 and indices_trennmittelschicht.size > 0:
                         indices_trennmittelschicht = [0]
                     df_list_.append(d.iloc[indices_trennmittelschicht])
                     lab.append(tr)
@@ -473,7 +473,7 @@ def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condi
         if type(label) != list:
             gfamount_where = df['Glasfaseranteil'] == gfamount
             indices_gf = np.where(gfamount_where)[0] # indices
-            if len(indices_gf) == 0 and indices_gf:
+            if len(indices_gf) == 0 and indices_gf.size > 0:
                 indices_gf = [0]
             df = df.iloc[indices_gf]
             label = label + "_gf" + str(int(gfamount))
@@ -483,7 +483,7 @@ def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condi
             for d in df_list:
                 gfamount_where = d['Glasfaseranteil'] == gfamount
                 indices_gf = np.where(gfamount_where)[0] # indices
-                if len(indices_gf) == 0 and indices_gf:
+                if len(indices_gf) == 0 and indices_gf.size > 0:
                     indices_gf = [0]
                 df_list_.append(d.iloc[indices_gf])
             df_list = df_list_
@@ -501,7 +501,7 @@ def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condi
             for amount in gfamount_types:
                 gfamount_where = df['Glasfaseranteil'] == amount
                 indices_gf = np.where(gfamount_where)[0] # indices
-                if len(indices_gf) == 0 and indices_gf:
+                if len(indices_gf) == 0 and indices_gf.size > 0:
                     indices_gf = [0]
                 df_ = df.iloc[indices_gf]
                 df_list.append(df_)
@@ -516,7 +516,7 @@ def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condi
                 for amount in gfamount_types:
                     gfamount_where = d['Glasfaseranteil'] == amount
                     indices_gf = np.where(gfamount_where)[0] # indices
-                    if len(indices_gf) == 0 and indices_gf:
+                    if len(indices_gf) == 0 and indices_gf.size > 0:
                         indices_gf = [0]
                     df_list_.append(d.iloc[indices_gf])
                     lab.append(amount)
@@ -538,7 +538,7 @@ def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condi
         if type(label) != list:
             type_where = df['Typ'] == type_
             indices_type = np.where(type_where)[0] # indices
-            if len(indices_type) == 0 and indices_type:
+            if len(indices_type) == 0 and indices_type.size > 0:
                 indices_type = [0]
             df = df.iloc[indices_type]
             label = label + "_" + type_
@@ -547,7 +547,7 @@ def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condi
             for d in df_list:
                 type_where = d['Typ'] == type_
                 indices_type = np.where(type_where)[0] # indices
-                if len(indices_type) == 0 and indices_type:
+                if len(indices_type) == 0 and indices_type.size > 0:
                     indices_type = [0]
                 df_list_.append(d.iloc[indices_type])
             df_list = df_list_
@@ -565,7 +565,7 @@ def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condi
             for t in types_:
                 type_where = df['Typ'] == t
                 indices_type = np.where(type_where)[0] # indices
-                if len(indices_type) == 0 and indices_type:
+                if len(indices_type) == 0 and indices_type.size > 0:
                     indices_type = [0]
                 df_ = df.iloc[indices_type]
                 df_list.append(df_)
@@ -579,7 +579,7 @@ def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condi
                 for t in types_:
                     type_where = d['Typ'] == t
                     indices_type = np.where(type_where)[0] # indices
-                    if len(indices_type) == 0 and indices_type:
+                    if len(indices_type) == 0 and indices_type.size > 0:
                         indices_type = [0]
                     df_list_.append(d.iloc[indices_type])
                     lab.append(t)
@@ -602,7 +602,7 @@ def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condi
         if type(label) != list:
             time_where = df['Zeit'] == time
             indices_time = np.where(time_where)[0] # indices
-            if len(indices_time) == 0 and indices_time:
+            if len(indices_time) == 0 and indices_time.size > 0:
                 indices_time = [0]
             df = df.iloc[indices_time]
             label = label + "_t" + str(int(time)) + "min"
@@ -630,7 +630,7 @@ def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condi
             for tim in times:
                 time_where = df['Zeit'] == tim
                 indices_time = np.where(time_where)[0] # indices
-                if len(indices_time) == 0 and indices_time:
+                if len(indices_time) == 0 and indices_time.size > 0:
                     indices_time = [0]
                 df_ = df.iloc[indices_time]
                 df_list.append(df_)
@@ -644,7 +644,7 @@ def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condi
                 for tim in times:
                     time_where = d['Zeit'] == tim
                     indices_time = np.where(time_where)[0] # indices
-                    if len(indices_time) == 0 and indices_time:
+                    if len(indices_time) == 0 and indices_time.size > 0:
                         indices_time = [0]
                     df_list_.append(d.iloc[indices_time])
                     lab.append(tim)
@@ -663,7 +663,7 @@ def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condi
         if type(label) != list:
             zyklus_where = df['Zyklenanzahl'] == zyklusanzahl
             indices_zyklus = np.where(zyklus_where)[0] # indices
-            if len(indices_zyklus) == 0 and indices_zyklus:
+            if len(indices_zyklus) == 0 and indices_zyklus.size > 0:
                 indices_zyklus = [0]
             df = df.iloc[indices_zyklus]
             label = label + "_" + str(int(zyklusanzahl)) + "x"
@@ -672,7 +672,7 @@ def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condi
             for d in df_list:
                 zyklus_where = d['Zyklenanzahl'] == zyklusanzahl
                 indices_zyklus = np.where(zyklus_where)[0] # indices
-                if len(indices_zyklus) == 0 and indices_zyklus:
+                if len(indices_zyklus) == 0 and indices_zyklus.size > 0:
                     indices_zyklus = [0]
                 df_list_.append(d.iloc[indices_zyklus])
             df_list = df_list_
@@ -691,7 +691,7 @@ def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condi
             for zyk in zyklen:
                 zyklus_where = df['Zyklenanzahl'] == zyk
                 indices_zyklus = np.where(zyklus_where)[0] # indices
-                if len(indices_zyklus) == 0 and indices_zyklus:
+                if len(indices_zyklus) == 0 and indices_zyklus.size > 0:
                     indices_zyklus = [0]
                 df_ = df.iloc[indices_zyklus]
                 df_list.append(df_)
@@ -703,9 +703,9 @@ def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condi
                 zyklen = d['Zyklenanzahl'].unique()
                 lab = []
                 for zyk in zyklen:
-                    zyklus_where = d['Verfahrgeschwindigkeit'] == zyk
+                    zyklus_where = d['Zyklenanzahl'] == zyk
                     indices_zyklus = np.where(zyklus_where)[0] # indices
-                    if len(indices_zyklus) == 0 and indices_zyklus:
+                    if len(indices_zyklus) == 0 and indices_zyklus.size > 0:
                         indices_zyklus = [0]
                     df_list_.append(d.iloc[indices_zyklus])
                     lab.append(zyk)
@@ -724,7 +724,7 @@ def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condi
         if type(label) != list:
             verfahrgeschwindigkeit_where = df['Verfahrgeschwindigkeit'] == verfahrgeschwindigkeit
             indices_verfahrgeschwindigkeit = np.where(verfahrgeschwindigkeit_where)[0] # indices
-            if len(indices_verfahrgeschwindigkeit) == 0 and indices_verfahrgeschwindigkeit:
+            if len(indices_verfahrgeschwindigkeit) == 0 and indices_verfahrgeschwindigkeit.size > 0:
                 indices_verfahrgeschwindigkeit = [0]
             df = df.iloc[indices_verfahrgeschwindigkeit]
             label = label + "_" + str(verfahrgeschwindigkeit) + "m-min"
@@ -733,7 +733,7 @@ def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condi
             for d in df_list:
                 verfahrgeschwindigkeit_where = d['Verfahrgeschwindigkeit'] == verfahrgeschwindigkeit
                 indices_verfahrgeschwindigkeit = np.where(verfahrgeschwindigkeit_where)[0] # indices
-                if len(indices_verfahrgeschwindigkeit) == 0 and indices_verfahrgeschwindigkeit:
+                if len(indices_verfahrgeschwindigkeit) == 0 and indices_verfahrgeschwindigkeit.size > 0:
                     indices_verfahrgeschwindigkeit = [0]
                 df_list_.append(d.iloc[indices_verfahrgeschwindigkeit])
             df_list = df_list_
@@ -752,7 +752,7 @@ def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condi
             for ver in verfahrgeschwindigkeiten:
                 verfahrgeschwindigkeit_where = df['Verfahrgeschwindigkeit'] == ver
                 indices_verfahrgeschwindigkeit = np.where(verfahrgeschwindigkeit_where)[0] # indices
-                if len(indices_verfahrgeschwindigkeit) == 0 and indices_verfahrgeschwindigkeit:
+                if len(indices_verfahrgeschwindigkeit) == 0 and indices_verfahrgeschwindigkeit.size > 0:
                     indices_verfahrgeschwindigkeit = [0]
                 df_ = df.iloc[indices_verfahrgeschwindigkeit]
                 df_list.append(df_)
@@ -766,7 +766,7 @@ def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condi
                 for ver in verfahrgeschwindigkeiten:
                     verfahrgeschwindigkeit_where = d['Verfahrgeschwindigkeit'] == ver
                     indices_verfahrgeschwindigkeit = np.where(verfahrgeschwindigkeit_where)[0] # indices
-                    if len(indices_verfahrgeschwindigkeit) == 0 and indices_verfahrgeschwindigkeit:
+                    if len(indices_verfahrgeschwindigkeit) == 0 and indices_verfahrgeschwindigkeit.size > 0:
                         indices_verfahrgeschwindigkeit = [0]
                     df_list_.append(d.iloc[indices_verfahrgeschwindigkeit])
                     lab.append(ver)
@@ -778,7 +778,31 @@ def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condi
                 print("No such combination available")
 
 
-    
+    if one_energieeintrag == "y":
+
+        if type(label) != list:
+            energieeintrag_where = df['Energieeintrag'] == energieeintrag
+            indices_energieeintrag = np.where(energieeintrag_where)[0] # indices
+            if len(indices_energieeintrag) == 0 and indices_energieeintrag.size > 0:
+                indices_energieeintrag = [0]
+            df = df.iloc[indices_energieeintrag]
+            label = label + "_" + str(energieeintrag) + "E"
+        else:
+            df_list_ = []
+            for d in df_list:
+                energieeintrag_where = d['Energieeintrag'] == energieeintrag
+                indices_energieeintrag = np.where(energieeintrag_where)[0] # indices
+                if len(indices_energieeintrag) == 0 and indices_energieeintrag.size > 0:
+                    indices_energieeintrag = [0]
+                df_list_.append(d.iloc[indices_energieeintrag])
+            df_list = df_list_
+            label = [l + "_" + str(energieeintrag) + "E" for l in label]
+            if not df_list:
+                combi_impossible = "yes"
+                print("No such combination available")
+            # print(df_list)
+
+
     # print(df_list)
 
     if del_columns == "y":
@@ -831,17 +855,18 @@ if __name__ == '__main__':
     one_type = None      # 'y' or 'n' or None
     type_ = 'Dymid'
 
-    one_time = None      # 'y' or 'n' or None
+    one_time = 'y'      # 'y' or 'n' or None
     time = 5.0
 
-    one_zyklus = 'y'    # 'y' or 'n' or None
+    one_zyklus = 'n'    # 'y' or 'n' or None
     zyklusanzahl = 1.0
 
     # fuer zeitmessung
-    one_verfahrgeschwindigkeit = 'y' # 'y' or 'n' or None
+    one_verfahrgeschwindigkeit = 'n'  # 'y' or 'n' or None
     verfahrgeschwindigkeit = 2.5
 
     one_energieeintrag = 'y' # 'y' or None
+    energieeintrag = 2.5
 
     # fuer ND:
     one_leistung = 'n' # 'y' or 'n' or None
@@ -854,13 +879,13 @@ if __name__ == '__main__':
     columns_of_interest = ['Material', 'Glasfaseranteil', 'Typ', 'Verfahrgeschwindigkeit', 'Zeit', 'KW_Wasser_mean', 'KW_Wasser_std', 'KW_Diodmethan_mean', 'KW_Diodmethan_std', 'KW_Ethylglykol_mean', 'KW_Ethylglykol_std', 'OE_total_mean', 'OE_total_std', 'OE_dispers_mean', 'OE_dispers_std', 'OE_polar_mean', 'OE_polar_std']
 
     # plotting settings
-    x = 'Zeit'
+    x = 'Zyklenanzahl'
     y = 'OE_polar_mean' #'OE_total_mean'
     yerr = 'OE_polar_std'
 
-    x_min = 4
-    x_max = 41
-    scale = 'log'
+    x_min = 0
+    x_max = 17
+    scale = ''
 
     save_plot_path = "/Users/toffiefee/Documents/Uni_Bremen/Masterprojekt_2.0/Ergebnisse/Abbildungen/"
     save_plot_name = "" #"PA66_t5_polar"
@@ -909,6 +934,16 @@ if __name__ == '__main__':
     # delete all ND rows
     df = df[~df.index.str.contains("ND")]
 
+    # for row, _ in enumerate(df.iterrows()):
+    #     print(df.iloc[row].index)
+
+    for row in df.index:
+        print(row, end= "\n")
+
+    df['Energieeintrag'] = ''
+    for i, _ in enumerate(df.iterrows()):
+        df['Energieeintrag'].iloc[i] = df["Verfahrgeschwindigkeit"].iloc[i]/df["Zyklenanzahl"].iloc[i]
+
     df = load_KW_data(df, path_KW_txtfiles, no_of_KW_samples=no_of_KW_samples)
         
     # df = load_zugversuch_data(df, path_Zug_xlsfiles)
@@ -928,7 +963,7 @@ if __name__ == '__main__':
 
     # print(df)
 
-    df, label = reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condition, condition, one_gf, gfamount, one_type, type_, one_time, time, one_leistung, leistung, one_precursor, precursor, one_energieeintrag, del_columns, columns_of_interest)
+    df, label = reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condition, condition, one_gf, gfamount, one_type, type_, one_time, time, one_leistung, leistung, one_precursor, precursor, one_energieeintrag, energieeintrag, del_columns, columns_of_interest)
     # print(df)
 
     # Find indices of empty DataFrames
@@ -997,10 +1032,13 @@ if __name__ == '__main__':
                 if yerr != '' or yerr != None:
                     plt.errorbar(anderes[x], anderes[y], yerr=anderes[yerr], xerr=None, fmt='none', capsize=3.0, elinewidth=0.5, ecolor=colors[i])
 
-            # plt.xlim(x_min, x_max)
+            if scale == "log":
+                plt.xscale(scale)
+            else:
+                plt.xlim(x_min, x_max)
             plt.xlabel(str(x))
             plt.ylabel(str(y))
-            plt.xscale(scale)
+
             plt.legend(fontsize='small', loc="center left", bbox_to_anchor=(1.0, 0.5))
         
         
