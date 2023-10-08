@@ -858,37 +858,39 @@ if __name__ == '__main__':
     one_time = 'y'      # 'y' or 'n' or None
     time = 5.0
 
-    one_zyklus = 'n'    # 'y' or 'n' or None
+    one_zyklus = 'y'    # 'y' or 'n' or None
     zyklusanzahl = 1.0
 
     # fuer zeitmessung
-    one_verfahrgeschwindigkeit = 'n'  # 'y' or 'n' or None
+    one_verfahrgeschwindigkeit = None  # 'y' or 'n' or None
     verfahrgeschwindigkeit = 2.5
 
-    one_energieeintrag = 'y' # 'y' or None
+    one_energieeintrag = None # 'y' or None
     energieeintrag = 2.5
 
     # fuer ND:
-    one_leistung = 'n' # 'y' or 'n' or None
+    one_leistung = None # 'y' or 'n' or None
     leistung = 1500
 
-    one_precursor = 'y' # 'y' or 'n' or None
+    one_precursor = None # 'y' or 'n' or None
     precursor = "AuE"
 
     del_columns = 'n'   # 'y' or 'n'
     columns_of_interest = ['Material', 'Glasfaseranteil', 'Typ', 'Verfahrgeschwindigkeit', 'Zeit', 'KW_Wasser_mean', 'KW_Wasser_std', 'KW_Diodmethan_mean', 'KW_Diodmethan_std', 'KW_Ethylglykol_mean', 'KW_Ethylglykol_std', 'OE_total_mean', 'OE_total_std', 'OE_dispers_mean', 'OE_dispers_std', 'OE_polar_mean', 'OE_polar_std']
 
     # plotting settings
-    x = 'Zyklenanzahl'
+    x = 'Verfahrgeschwindigkeit'
     y = 'OE_polar_mean' #'OE_total_mean'
     yerr = 'OE_polar_std'
 
     x_min = 0
-    x_max = 17
+    x_max = 51
     scale = ''
+    x_label = 'Verfahrgeschwindigkeit in m/min'
+    y_label = 'Polare Oberflächenenergie in mN/m'
 
     save_plot_path = "/Users/toffiefee/Documents/Uni_Bremen/Masterprojekt_2.0/Ergebnisse/Abbildungen/"
-    save_plot_name = "" #"PA66_t5_polar"
+    save_plot_name = ''#"HDPE_x-Verfahrgeschwindigkeit_y-OE_polar" 
 
     figsize = [8,4] # [x, y]
 
@@ -967,16 +969,14 @@ if __name__ == '__main__':
     # print(df)
 
     # Find indices of empty DataFrames
-    empty_indices = []
+    filled_indices = []
     for idx, d in enumerate(df):
-        if d.empty:
-            empty_indices.append(idx)
+        if not d.empty:
+            filled_indices.append(idx)
 
-    for i in empty_indices:
-        del label[i]
-    df = [df for df in df if not df.empty]
+    label = [label[idx] for idx in filled_indices]
+    df = [df[idx] for idx in filled_indices]
 
-    # print(df)
 
     if type(label) == list:
         for i, l in enumerate(label):
@@ -988,11 +988,12 @@ if __name__ == '__main__':
     # x = input(f'Enter X : {df.columns} \n')
     # y = input(f'Enter Y : {df.columns} \n')
 
-    print(df)
+    # print(df)
 
 
     cmap = matplotlib.cm.get_cmap('turbo_r')
     plt.figure(figsize=figsize)
+    # fig, (ax1, ax2) = plt.subplots(1,2, sharey=True, figsize=figsize)
 
     if df != None:
         if type(df) != list:
@@ -1012,7 +1013,9 @@ if __name__ == '__main__':
         else:
 
             amount_colors = len(df)
-            colors = [cmap(c) for c in np.arange(0.05, 0.95, 1/(amount_colors+1))]
+            colors = [cmap(c) for c in np.arange(0.05, 0.95, 1/(amount_colors+2))]
+            # print(len(colors))
+            # print(len(df))
 
             # print(df)
             for i, d in enumerate(df):
@@ -1024,20 +1027,31 @@ if __name__ == '__main__':
                 # anderes = d[d['Verfahrgeschwindigkeit'] == 0.0]
                 # referenz = pd.DataFrame()
                 # print(referenz)
-                if referenz.empty == False:
-                    plt.axhline(y=float(referenz[y]), color=colors[i])
-                    plt.fill_between([x_min, x_max], float(referenz[y]) - float(referenz[yerr]), float(referenz[y]) + float(referenz[yerr]), color=colors[i], alpha=0.2, edgecolor='none')
-                # print(anderes[x], anderes[y])
                 plt.scatter(anderes[x], anderes[y], label=label[i], marker='x', color=colors[i])
                 if yerr != '' or yerr != None:
                     plt.errorbar(anderes[x], anderes[y], yerr=anderes[yerr], xerr=None, fmt='none', capsize=3.0, elinewidth=0.5, ecolor=colors[i])
+
+                if referenz.empty == False:
+                    plt.scatter(50, referenz[y], label=label[i], marker='x', color=colors[i])
+                    if yerr != '' or yerr != None:
+                        plt.errorbar(50, referenz[y], yerr=referenz[yerr], xerr=None, fmt='none', capsize=3.0, elinewidth=0.5, ecolor=colors[i])
+
+                    # plt.axhline(y=float(referenz[y]), color=colors[i])
+                    # plt.fill_between([x_min, x_max], float(referenz[y]) - float(referenz[yerr]), float(referenz[y]) + float(referenz[yerr]), color=colors[i], alpha=0.2, edgecolor='none')
+                # print(anderes[x], anderes[y])
 
             if scale == "log":
                 plt.xscale(scale)
             else:
                 plt.xlim(x_min, x_max)
-            plt.xlabel(str(x))
-            plt.ylabel(str(y))
+            if x_label != None or x_label != "":
+                plt.xlabel(x_label)
+            else:
+                plt.xlabel(str(x))
+            if y_label != None or y_label != "":
+                plt.ylabel(y_label)
+            else:
+                plt.ylabel(str(y))
 
             plt.legend(fontsize='small', loc="center left", bbox_to_anchor=(1.0, 0.5))
         
