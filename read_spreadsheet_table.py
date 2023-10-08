@@ -992,8 +992,10 @@ if __name__ == '__main__':
 
 
     cmap = matplotlib.cm.get_cmap('turbo_r')
-    plt.figure(figsize=figsize)
-    # fig, (ax1, ax2) = plt.subplots(1,2, sharey=True, figsize=figsize)
+    # plt.figure(figsize=figsize)
+    # fig, ax1 = plt.subplots(figsize=figsize)
+    fig, (ax1, ax2) = plt.subplots(1, 2, sharey=True, figsize=figsize)
+    
 
     if df != None:
         if type(df) != list:
@@ -1002,11 +1004,11 @@ if __name__ == '__main__':
 
             color = cmap(0.3)
 
-            plt.scatter(df[x], df[y], label=label, marker='x')
+            ax1.scatter(df[x], df[y], label=label, marker='x')
             if yerr != '' or yerr != None:
                 plt.errorbar(df[x], df[y], yerr=df[yerr], xerr=None, fmt='none', capsize=3.0, elinewidth=0.5, ecolor=color)
-            plt.xlabel(str(x))
-            plt.ylabel(str(y))
+            ax1.xlabel(str(x))
+            ax1.ylabel(str(y))
             plt.legend()
             plt.show()
 
@@ -1027,14 +1029,16 @@ if __name__ == '__main__':
                 # anderes = d[d['Verfahrgeschwindigkeit'] == 0.0]
                 # referenz = pd.DataFrame()
                 # print(referenz)
-                plt.scatter(anderes[x], anderes[y], label=label[i], marker='x', color=colors[i])
+                max_x = 40
+                ax1.scatter(anderes[x], anderes[y], label=label[i], marker='x', color=colors[i])
                 if yerr != '' or yerr != None:
-                    plt.errorbar(anderes[x], anderes[y], yerr=anderes[yerr], xerr=None, fmt='none', capsize=3.0, elinewidth=0.5, ecolor=colors[i])
+                    ax1.errorbar(anderes[x], anderes[y], yerr=anderes[yerr], xerr=None, fmt='none', capsize=3.0, elinewidth=0.5, ecolor=colors[i])
 
                 if referenz.empty == False:
-                    plt.scatter(50, referenz[y], label=label[i], marker='x', color=colors[i])
+                    # ax2 = ax1.twiny()
+                    ax2.scatter(max_x+1, referenz[y], label=label[i], marker='x', color=colors[i])
                     if yerr != '' or yerr != None:
-                        plt.errorbar(50, referenz[y], yerr=referenz[yerr], xerr=None, fmt='none', capsize=3.0, elinewidth=0.5, ecolor=colors[i])
+                        ax2.errorbar(max_x+1, referenz[y], yerr=referenz[yerr], xerr=None, fmt='none', capsize=3.0, elinewidth=0.5, ecolor=colors[i])
 
                     # plt.axhline(y=float(referenz[y]), color=colors[i])
                     # plt.fill_between([x_min, x_max], float(referenz[y]) - float(referenz[yerr]), float(referenz[y]) + float(referenz[yerr]), color=colors[i], alpha=0.2, edgecolor='none')
@@ -1043,19 +1047,33 @@ if __name__ == '__main__':
             if scale == "log":
                 plt.xscale(scale)
             else:
-                plt.xlim(x_min, x_max)
+                ax1.set_xlim(x_min, x_max)
             if x_label != None or x_label != "":
-                plt.xlabel(x_label)
+                fig.supxlabel(x_label)
             else:
-                plt.xlabel(str(x))
+                fig.supxlabel(str(x))
             if y_label != None or y_label != "":
-                plt.ylabel(y_label)
+                ax1.set_ylabel(y_label)
             else:
-                plt.ylabel(str(y))
+                ax1.set_ylabe(str(y))
 
-            plt.legend(fontsize='small', loc="center left", bbox_to_anchor=(1.0, 0.5))
+            ax2.legend(fontsize='small', loc="center left", bbox_to_anchor=(1.0, 0.5))
         
         
+        ax1.spines['right'].set_visible(False)
+        ax2.spines['left'].set_visible(False)
+        ax1.yaxis.tick_left()
+        ax2.yaxis.set_visible(False)
+
+        d = 0.01 # how big to make the diagonal lines in axes coordinates
+        # arguments to pass plot, just so we don't keep repeating them
+        kwargs = dict(transform=ax1.transAxes, color='k', clip_on=False)
+        ax1.plot((1-d,1+d), (-d,+d), **kwargs)
+        ax1.plot((1-d,1+d),(1-d,1+d), **kwargs)
+
+        kwargs.update(transform=ax2.transAxes)  # switch to the bottom axes
+        ax2.plot((-d,+d), (1-d,1+d), **kwargs)
+        ax2.plot((-d,+d), (-d,+d), **kwargs)
 
         plt.tight_layout()
         if save_plot_path != "" or save_plot_path != None and save_plot_name != "" or save_plot_name != None:
