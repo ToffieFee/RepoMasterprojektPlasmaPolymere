@@ -10,6 +10,7 @@ from functools import reduce
 matplotlib.rcParams['mathtext.fontset'] = 'stix'
 matplotlib.rcParams['font.family'] = 'STIXGeneral'
 matplotlib.rcParams.update({'font.size': 12})
+from matplotlib.gridspec import GridSpec
 #Locale settings
 import locale
 # Set to German locale to get comma decimal separater
@@ -880,17 +881,17 @@ if __name__ == '__main__':
 
     # plotting settings
     x = 'Verfahrgeschwindigkeit'
-    y = 'OE_polar_mean' #'OE_total_mean'
-    yerr = 'OE_polar_std'
+    y = 'OE_total_mean'
+    yerr = 'OE_total_std'
 
     x_min = 0
-    x_max = 51
+    x_max = 42
     scale = ''
     x_label = 'Verfahrgeschwindigkeit in m/min'
-    y_label = 'Polare Oberflächenenergie in mN/m'
+    y_label = 'Gesamte Oberflächenenergie in mN/m' #'$F_{max}$ in N'
 
     save_plot_path = "/Users/toffiefee/Documents/Uni_Bremen/Masterprojekt_2.0/Ergebnisse/Abbildungen/"
-    save_plot_name = ''#"HDPE_x-Verfahrgeschwindigkeit_y-OE_polar" 
+    save_plot_name = ''#"HDPE_x-Verfahrgeschwindigkeit_y-Fmax" 
 
     figsize = [8,4] # [x, y]
 
@@ -948,20 +949,20 @@ if __name__ == '__main__':
 
     df = load_KW_data(df, path_KW_txtfiles, no_of_KW_samples=no_of_KW_samples)
         
-    # df = load_zugversuch_data(df, path_Zug_xlsfiles)
+    df = load_zugversuch_data(df, path_Zug_xlsfiles)
 
-    # delete all non-KW-value rows
-    OE_vals_where = df['OE_polar_mean'].notna()
-    indices_OE = np.where(OE_vals_where)[0] # indices
-    df = df.iloc[indices_OE]
+    # # delete all non-KW-value rows
+    # OE_vals_where = df['OE_polar_mean'].notna()
+    # indices_OE = np.where(OE_vals_where)[0] # indices
+    # df = df.iloc[indices_OE]
 
     # # delete all non-Zug-value rows
     # Zug_vals_where = df['Fmax in N mean'].notna()
     # indices_Zug = np.where(Zug_vals_where)[0] # indices
     # df = df.iloc[indices_Zug]
 
-    # datatypes = df.dtypes
-    # print(datatypes)
+    datatypes = df.dtypes
+    print(datatypes)
 
     # print(df)
 
@@ -994,7 +995,11 @@ if __name__ == '__main__':
     cmap = matplotlib.cm.get_cmap('turbo_r')
     # plt.figure(figsize=figsize)
     # fig, ax1 = plt.subplots(figsize=figsize)
-    fig, (ax1, ax2) = plt.subplots(1, 2, sharey=True, figsize=figsize)
+    # fig, (ax1, ax2) = plt.subplots(1, 2, sharey=True, figsize=figsize)
+    fig = plt.figure(figsize=figsize)
+    gs = GridSpec(1, 2, width_ratios=[4, 1])
+    ax1 = fig.add_subplot(gs.new_subplotspec((0, 0), colspan=1))
+    ax2 = fig.add_subplot(gs.new_subplotspec((0, 1), colspan=1), sharey=ax1)
     
 
     if df != None:
@@ -1029,16 +1034,15 @@ if __name__ == '__main__':
                 # anderes = d[d['Verfahrgeschwindigkeit'] == 0.0]
                 # referenz = pd.DataFrame()
                 # print(referenz)
-                max_x = 40
                 ax1.scatter(anderes[x], anderes[y], label=label[i], marker='x', color=colors[i])
                 if yerr != '' or yerr != None:
                     ax1.errorbar(anderes[x], anderes[y], yerr=anderes[yerr], xerr=None, fmt='none', capsize=3.0, elinewidth=0.5, ecolor=colors[i])
 
                 if referenz.empty == False:
                     # ax2 = ax1.twiny()
-                    ax2.scatter(max_x+1, referenz[y], label=label[i], marker='x', color=colors[i])
+                    ax2.scatter(x_max+1, referenz[y], label=label[i], marker='x', color=colors[i])
                     if yerr != '' or yerr != None:
-                        ax2.errorbar(max_x+1, referenz[y], yerr=referenz[yerr], xerr=None, fmt='none', capsize=3.0, elinewidth=0.5, ecolor=colors[i])
+                        ax2.errorbar(x_max+1, referenz[y], yerr=referenz[yerr], xerr=None, fmt='none', capsize=3.0, elinewidth=0.5, ecolor=colors[i])
 
                     # plt.axhline(y=float(referenz[y]), color=colors[i])
                     # plt.fill_between([x_min, x_max], float(referenz[y]) - float(referenz[yerr]), float(referenz[y]) + float(referenz[yerr]), color=colors[i], alpha=0.2, edgecolor='none')
@@ -1049,13 +1053,13 @@ if __name__ == '__main__':
             else:
                 ax1.set_xlim(x_min, x_max)
             if x_label != None or x_label != "":
-                fig.supxlabel(x_label)
+                ax1.set_xlabel(x_label)
             else:
-                fig.supxlabel(str(x))
+                ax1.set_xlabel(str(x))
             if y_label != None or y_label != "":
                 ax1.set_ylabel(y_label)
             else:
-                ax1.set_ylabe(str(y))
+                ax1.set_ylabel(str(y))
 
             ax2.legend(fontsize='small', loc="center left", bbox_to_anchor=(1.0, 0.5))
         
@@ -1064,16 +1068,16 @@ if __name__ == '__main__':
         ax2.spines['left'].set_visible(False)
         ax1.yaxis.tick_left()
         ax2.yaxis.set_visible(False)
+        ax2.set_xticks([x_max+1])
+        ax2.set_xticklabels(['Referenz'])
 
-        d = 0.01 # how big to make the diagonal lines in axes coordinates
-        # arguments to pass plot, just so we don't keep repeating them
-        kwargs = dict(transform=ax1.transAxes, color='k', clip_on=False)
-        ax1.plot((1-d,1+d), (-d,+d), **kwargs)
-        ax1.plot((1-d,1+d),(1-d,1+d), **kwargs)
-
-        kwargs.update(transform=ax2.transAxes)  # switch to the bottom axes
-        ax2.plot((-d,+d), (1-d,1+d), **kwargs)
-        ax2.plot((-d,+d), (-d,+d), **kwargs)
+        d = .5  # proportion of vertical to horizontal extent of the slanted line
+        kwargs = dict(marker=[(-1, -d), (1, d)], markersize=12,
+                    linestyle="none", color='k', mec='k', mew=1, clip_on=False)
+        ax1.plot([1, 1], [0, 0], transform=ax1.transAxes, **kwargs)
+        ax2.plot([0, 0], [1, 1], transform=ax2.transAxes, **kwargs)
+        ax1.plot([1, 1], [1, 1], transform=ax1.transAxes, **kwargs)
+        ax2.plot([0, 0], [0, 0], transform=ax2.transAxes, **kwargs)
 
         plt.tight_layout()
         if save_plot_path != "" or save_plot_path != None and save_plot_name != "" or save_plot_name != None:
