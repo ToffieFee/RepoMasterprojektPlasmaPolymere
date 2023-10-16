@@ -725,18 +725,32 @@ def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condi
         if type(label) != list:
             verfahrgeschwindigkeit_where = df['Verfahrgeschwindigkeit'] == verfahrgeschwindigkeit
             indices_verfahrgeschwindigkeit = np.where(verfahrgeschwindigkeit_where)[0] # indices
+            verfahrgeschwindigkeit_where_ref = df['Verfahrgeschwindigkeit'] == 0.0 # referenz
+            referenz_verfahrgeschwindigkeit = np.where(verfahrgeschwindigkeit_where_ref)[0] # indices referenz
             if len(indices_verfahrgeschwindigkeit) == 0 and indices_verfahrgeschwindigkeit.size > 0:
                 indices_verfahrgeschwindigkeit = [0]
+            df_ref = df
             df = df.iloc[indices_verfahrgeschwindigkeit]
+            if indices_verfahrgeschwindigkeit != [0]:
+                df_ref = df_ref.iloc[referenz_verfahrgeschwindigkeit]
+                df = pd.concat([df, df_ref], axis=0)
             label = label + "_" + str(verfahrgeschwindigkeit) + "m-min"
         else:
             df_list_ = []
             for d in df_list:
                 verfahrgeschwindigkeit_where = d['Verfahrgeschwindigkeit'] == verfahrgeschwindigkeit
                 indices_verfahrgeschwindigkeit = np.where(verfahrgeschwindigkeit_where)[0] # indices
+                verfahrgeschwindigkeit_where_ref = d['Verfahrgeschwindigkeit'] == 0.0 # referenz
+                referenz_verfahrgeschwindigkeit = np.where(verfahrgeschwindigkeit_where_ref)[0] # indices referenz
                 if len(indices_verfahrgeschwindigkeit) == 0 and indices_verfahrgeschwindigkeit.size > 0:
                     indices_verfahrgeschwindigkeit = [0]
-                df_list_.append(d.iloc[indices_verfahrgeschwindigkeit])
+                if indices_verfahrgeschwindigkeit != [0]:
+                    d_ref = d.iloc[referenz_verfahrgeschwindigkeit]
+                    dd = pd.concat([d.iloc[indices_verfahrgeschwindigkeit], d_ref], axis=0)
+                else:
+                    dd = d.iloc[indices_verfahrgeschwindigkeit]
+                df_list_.append(dd)
+                # df_list_.append(d.iloc[indices_verfahrgeschwindigkeit])
             df_list = df_list_
             label = [l + "_" + str(verfahrgeschwindigkeit) + "m-min" for l in label]
             if not df_list:
@@ -851,22 +865,22 @@ if __name__ == '__main__':
     trennmittelschicht = 'mT' 
 
     one_gf = None       # 'y' or 'n' or None
-    gfamount = 0.0
+    gfamount = 30.0
 
-    one_type = None      # 'y' or 'n' or None
+    one_type = 'n'      # 'y' or 'n' or None
     type_ = 'Dymid'
 
     one_time = 'y'      # 'y' or 'n' or None
     time = 5.0
 
-    one_zyklus = 'y'    # 'y' or 'n' or None
+    one_zyklus = None    # 'y' or 'n' or None
     zyklusanzahl = 1.0
 
     # fuer zeitmessung
     one_verfahrgeschwindigkeit = None  # 'y' or 'n' or None
     verfahrgeschwindigkeit = 2.5
 
-    one_energieeintrag = None # 'y' or None
+    one_energieeintrag = 'y' # 'y' or None
     energieeintrag = 2.5
 
     # fuer ND:
@@ -888,78 +902,83 @@ if __name__ == '__main__':
     x_max = 42
     scale = ''
     x_label = 'Verfahrgeschwindigkeit in m/min'
-    y_label = 'Gesamte Oberflächenenergie in mN/m' #'$F_{max}$ in N'
+    y_label = 'Disperse Oberflächenenergie in mN/m' #'$F_{max}$ in N'
 
     save_plot_path = "/Users/toffiefee/Documents/Uni_Bremen/Masterprojekt_2.0/Ergebnisse/Abbildungen/"
-    save_plot_name = ''#"HDPE_x-Verfahrgeschwindigkeit_y-Fmax" 
+    save_plot_name = ''#'PP_gf30_x-Verfahrgeschwindigkeit_y-OE_dispers'#"HDPE_x-Verfahrgeschwindigkeit_y-Fmax" 
 
     figsize = [8,4] # [x, y]
 
 
 ##################################################################################################
 
-    df = read_spreadsheet_xls(path_spreadsheet, filename_spreadsheet)
-    df = df.drop('HDPE_rezykliert_mT_C2_Referenz')
-    df = df.drop('PP_Natur_Vfg10_quer_Homogenitaet_hinten')
-    df = df.drop('PP_Natur_Vfg10_quer_Homogenitaet_Mitte')
-    df = df.drop('PP_Natur_Vfg10_quer_Homogenitaet_vorne')
-    df = df.drop('PP_Natur_Vfg10_laengs_Homogenitaet_rechts')
-    df = df.drop('PP_Natur_Vfg10_laengs_Homogenitaet_links')
-    df = df.drop('PP_Natur_Vfg20_vorBehandlungabgewischt')
-    df = df.drop('längs (y)')
-    df = df.drop('quer (x); nicht werten')
-    df = df.drop('HDPE_quer_vorne_Vfg20')
-    df = df.drop('HDPE_quer_Mitte_Vfg20')
-    df = df.drop('HDPE_quer_hinten_Vfg20')
-    df = df.drop('HDPE_quer_vorne_Vfg5')
-    df = df.drop('HDPE_quer_Mitte_Vfg5')
-    df = df.drop('HDPE_quer_hinten_Vfg5')
-    df = df.drop('HDPE_quer_vorne_Vfg10')
-    df = df.drop('HDPE_quer_Mitte_Vfg10')
-    df = df.drop('HDPE_quer_hinten_Vfg10')
-    df = df.drop('HDPE_quer_vorne_Vfg2-5')
-    df = df.drop('HDPE_quer_Mitte_Vfg2-5')
-    df = df.drop('HDPE_quer_hinten_Vfg2-5')
-    df = df.drop('HDPE_quer_Mitte_abgewischt_Vfg2-5')
-    df = df.drop('runde Proben, Charakterisierung')
-    df = df.drop('PP_St_Klebuebung_Tabea')
-    df = df.drop('PP_St_Klebuebung_Feline')
-    df = df.drop('PP_unbehandelt_Klebuebung_Tabea')
-    df = df.drop('PP_unbehandelt_Klebuebung_Feline')
-    df = df.drop('PP_unbehandelt_Klebeeinweisung')
-    df = df.drop('PP_5m-min_Klebeeinweisung')
-    df = df.drop('PP_20m-min_Klebeeinweisung')
-    df = df.drop('PP_40m-min_Klebeeinweisung')
+    # df = read_spreadsheet_xls(path_spreadsheet, filename_spreadsheet)
+    # df = df.drop('HDPE_rezykliert_mT_C2_Referenz')
+    # df = df.drop('PP_Natur_Vfg10_quer_Homogenitaet_hinten')
+    # df = df.drop('PP_Natur_Vfg10_quer_Homogenitaet_Mitte')
+    # df = df.drop('PP_Natur_Vfg10_quer_Homogenitaet_vorne')
+    # df = df.drop('PP_Natur_Vfg10_laengs_Homogenitaet_rechts')
+    # df = df.drop('PP_Natur_Vfg10_laengs_Homogenitaet_links')
+    # df = df.drop('PP_Natur_Vfg20_vorBehandlungabgewischt')
+    # df = df.drop('längs (y)')
+    # df = df.drop('quer (x); nicht werten')
+    # df = df.drop('HDPE_quer_vorne_Vfg20')
+    # df = df.drop('HDPE_quer_Mitte_Vfg20')
+    # df = df.drop('HDPE_quer_hinten_Vfg20')
+    # df = df.drop('HDPE_quer_vorne_Vfg5')
+    # df = df.drop('HDPE_quer_Mitte_Vfg5')
+    # df = df.drop('HDPE_quer_hinten_Vfg5')
+    # df = df.drop('HDPE_quer_vorne_Vfg10')
+    # df = df.drop('HDPE_quer_Mitte_Vfg10')
+    # df = df.drop('HDPE_quer_hinten_Vfg10')
+    # df = df.drop('HDPE_quer_vorne_Vfg2-5')
+    # df = df.drop('HDPE_quer_Mitte_Vfg2-5')
+    # df = df.drop('HDPE_quer_hinten_Vfg2-5')
+    # df = df.drop('HDPE_quer_Mitte_abgewischt_Vfg2-5')
+    # df = df.drop('runde Proben, Charakterisierung')
+    # df = df.drop('PP_St_Klebuebung_Tabea')
+    # df = df.drop('PP_St_Klebuebung_Feline')
+    # df = df.drop('PP_unbehandelt_Klebuebung_Tabea')
+    # df = df.drop('PP_unbehandelt_Klebuebung_Feline')
+    # df = df.drop('PP_unbehandelt_Klebeeinweisung')
+    # df = df.drop('PP_5m-min_Klebeeinweisung')
+    # df = df.drop('PP_20m-min_Klebeeinweisung')
+    # df = df.drop('PP_40m-min_Klebeeinweisung')
 
-    df = df.drop('Kleben > KW bei 1m-min 1')
-    df = df.drop('Kleben > KW bei 1m-min 2')
+    # df = df.drop('Kleben > KW bei 1m-min 1')
+    # df = df.drop('Kleben > KW bei 1m-min 2')
 
-    # delete all ND rows
-    df = df[~df.index.str.contains("ND")]
+    # # delete all ND rows
+    # df = df[~df.index.str.contains("ND")]
 
-    # for row, _ in enumerate(df.iterrows()):
-    #     print(df.iloc[row].index)
+    # # for row, _ in enumerate(df.iterrows()):
+    # #     print(df.iloc[row].index)
 
-    for row in df.index:
-        print(row, end= "\n")
+    # for row in df.index:
+    #     print(row, end= "\n")
 
-    df['Energieeintrag'] = ''
-    for i, _ in enumerate(df.iterrows()):
-        df['Energieeintrag'].iloc[i] = df["Verfahrgeschwindigkeit"].iloc[i]/df["Zyklenanzahl"].iloc[i]
+    # df['Energieeintrag'] = ''
+    # for i, _ in enumerate(df.iterrows()):
+    #     df['Energieeintrag'].iloc[i] = df["Verfahrgeschwindigkeit"].iloc[i]/df["Zyklenanzahl"].iloc[i]
+    # df = df.astype({"Energieeintrag": float})
 
-    df = load_KW_data(df, path_KW_txtfiles, no_of_KW_samples=no_of_KW_samples)
+    # df = load_KW_data(df, path_KW_txtfiles, no_of_KW_samples=no_of_KW_samples)
         
-    df = load_zugversuch_data(df, path_Zug_xlsfiles)
+    # df = load_zugversuch_data(df, path_Zug_xlsfiles)
 
-    # # delete all non-KW-value rows
-    # OE_vals_where = df['OE_polar_mean'].notna()
-    # indices_OE = np.where(OE_vals_where)[0] # indices
-    # df = df.iloc[indices_OE]
+    # # # delete all non-KW-value rows
+    # # OE_vals_where = df['OE_polar_mean'].notna()
+    # # indices_OE = np.where(OE_vals_where)[0] # indices
+    # # df = df.iloc[indices_OE]
 
-    # # delete all non-Zug-value rows
-    # Zug_vals_where = df['Fmax in N mean'].notna()
-    # indices_Zug = np.where(Zug_vals_where)[0] # indices
-    # df = df.iloc[indices_Zug]
+    # # # delete all non-Zug-value rows
+    # # Zug_vals_where = df['Fmax in N mean'].notna()
+    # # indices_Zug = np.where(Zug_vals_where)[0] # indices
+    # # df = df.iloc[indices_Zug]
+
+    # df.to_pickle(path_spreadsheet + "df.pkl")
+    df = pd.read_pickle(path_spreadsheet + "df.pkl")
+    df = df.astype({"Energieeintrag": float})
 
     datatypes = df.dtypes
     print(datatypes)
