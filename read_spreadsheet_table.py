@@ -795,6 +795,24 @@ def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condi
                 print("No such combination available")
 
 
+    # referenz über Verfahrgeschwindigkeit:
+    if one_verfahrgeschwindigkeit == None:
+
+        if type(label) != list:
+            verfahrgeschwindigkeit_where_ref = df['Verfahrgeschwindigkeit'] == 0.0 # referenz
+            referenz_verfahrgeschwindigkeit = np.where(verfahrgeschwindigkeit_where_ref)[0] # indices referenz
+            df_ref = df
+            df_ref = df_ref.iloc[referenz_verfahrgeschwindigkeit]
+        else:
+            df_list_ref = []
+            for d in df_list:
+                verfahrgeschwindigkeit_where_ref = d['Verfahrgeschwindigkeit'] == 0.0 # referenz
+                referenz_verfahrgeschwindigkeit = np.where(verfahrgeschwindigkeit_where_ref)[0] # indices referenz
+                d_ref = d.iloc[referenz_verfahrgeschwindigkeit]
+                df_list_ref.append(d_ref)
+
+
+
     if one_energieeintrag == "y":
 
         if type(label) != list:
@@ -818,6 +836,12 @@ def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condi
                 combi_impossible = "yes"
                 print("No such combination available")
             # print(df_list)
+
+        df_list_ = []
+        for i, d in enumerate(df_list):
+            dd = pd.concat([d, df_list_ref[i]], axis=0)
+            df_list_.append(dd)
+        df_list = df_list_
 
 
     # print(df_list)
@@ -872,14 +896,14 @@ if __name__ == '__main__':
     one_type = 'n'      # 'y' or 'n' or None
     type_ = 'Dymid'
 
-    one_time = None#'n'      # 'y' or 'n' or None
+    one_time = 'y'#'n'      # 'y' or 'n' or None
     time = 5.0
 
-    one_zyklus = 'n'    # 'y' or 'n' or None
+    one_zyklus = None#'n'    # 'y' or 'n' or None
     zyklusanzahl = 1.0
 
     # fuer zeitmessung
-    one_verfahrgeschwindigkeit = 'n'  # 'y' or 'n' or None
+    one_verfahrgeschwindigkeit = None #'n'  # 'y' or 'n' or None
     verfahrgeschwindigkeit = 2.5
 
     one_energieeintrag = 'y' #'y' # 'y' or None
@@ -896,22 +920,26 @@ if __name__ == '__main__':
     columns_of_interest = ['Material', 'Glasfaseranteil', 'Typ', 'Verfahrgeschwindigkeit', 'Zeit', 'KW_Wasser_mean', 'KW_Wasser_std', 'KW_Diodmethan_mean', 'KW_Diodmethan_std', 'KW_Ethylglykol_mean', 'KW_Ethylglykol_std', 'OE_total_mean', 'OE_total_std', 'OE_dispers_mean', 'OE_dispers_std', 'OE_polar_mean', 'OE_polar_std']
 
     # plotting settings
-    x = 'Zeit'#'Verfahrgeschwindigkeit'
+    x = 'Zyklenanzahl' #'Zeit'#'Verfahrgeschwindigkeit'
     y = 'tmax in MPa mean'
     yerr = 'tmax in MPa std'
 
-    x_min = 4
-    x_max = 30000
+    x_min = 0
+    x_max = 21 # zeit: 30000
     scale = 'log'
-    x_label = 'Zeit in min' #'Verfahrgeschwindigkeit in m/min'
+    x_label = 'Zyklenanzahl x Verfahrgeschwindigkeit in m/min' #'Zeit in min' #'Verfahrgeschwindigkeit in m/min'
     y_label = 'Zugfestigkeit in MPa' #'Oberflächenenergie in mN/m' #'$F_{max}$ in N'
 
     # ticks = [1, 2, 2.5, 5, 10, 20]
-    ticks = [5, 30, 60, 1440, 10080, 20160]
-    ticklabels = ["5 min", "30 min", "1 h", "1 Tag", "7 Tage", "14 Tage"]
+    # ticklabels = None
+    ticks = [1, 2, 4, 8, 16]
+    ticklabels = ["1 x 2,5", "2 x 5", "4 x 10", "8 x 20", "16 x 40"]
+    # ticks = [5, 30, 60, 1440, 10080, 20160]
+    # ticklabels = ["5 min", "30 min", "1 h", "1 Tag", "7 Tage", "14 Tage"]
+
 
     save_plot_path = "/Users/toffiefee/Documents/Uni_Bremen/Masterprojekt_2.0/Ergebnisse/Abbildungen/"
-    save_plot_name = ''#'HDPE_Zeit_Zugfestigkeit_Bruchbild'#'HDPE_Verfahrgeschwindigkeit_Zugfestigkeit_Bruchbild'#'PP_gf30_x-Verfahrgeschwindigkeit_y-OE_dispers'#"HDPE_x-Verfahrgeschwindigkeit_y-Fmax" 
+    save_plot_name = ''#'HDPE_Energieeintrag_Zyklusanzahl_Zugfestigkeit_Bruchbild'#'HDPE_Verfahrgeschwindigkeit_Zugfestigkeit_Bruchbild'#'PP_gf30_x-Verfahrgeschwindigkeit_y-OE_dispers'#"HDPE_x-Verfahrgeschwindigkeit_y-Fmax" 
 
     figsize = [8,4] # [x, y]
 
@@ -1075,7 +1103,8 @@ if __name__ == '__main__':
             # print(len(df))
 
             # print(df)
-            text_yplus = [0.05, -0.1, -0.2]
+            text_yplus = [0.05, -0.1, -0.15]
+            # text_yplus = [-0.1, -0.1, -0.1]
             for i, d in enumerate(df):
 
                 # print(d[['Verfahrgeschwindigkeit', 'Glasfaseranteil', 'Typ', 'Zeit']])
@@ -1102,7 +1131,7 @@ if __name__ == '__main__':
                     if yerr != '' or yerr != None:
                         ax2.errorbar(x_max+1, referenz[y], yerr=referenz[yerr], xerr=None, fmt='none', capsize=3.0, elinewidth=0.5, ecolor=colors[i])
                     for g, xx in enumerate(referenz[y]):
-                        ax2.text(x_max+1 * 150, referenz[y].iloc[g]+text_yplus[i], referenz['Bruchbild'].iloc[g], color=colors[i], fontsize=8)
+                        ax2.text(x_max+1 * 1.1, referenz[y].iloc[g]+text_yplus[i], referenz['Bruchbild'].iloc[g], color=colors[i], fontsize=8)
 
                     # plt.axhline(y=float(referenz[y]), color=colors[i])
                     # plt.fill_between([x_min, x_max], float(referenz[y]) - float(referenz[yerr]), float(referenz[y]) + float(referenz[yerr]), color=colors[i], alpha=0.2, edgecolor='none')
@@ -1135,7 +1164,7 @@ if __name__ == '__main__':
         ax1.set_xticks(ticks)
         if ticklabels == None:
             ticklabels = [str(t) for t in ticks]
-        ax1.set_xticklabels(ticklabels, rotation=90)
+        ax1.set_xticklabels(ticklabels)#, rotation=90)
 
         d = .5  # proportion of vertical to horizontal extent of the slanted line
         kwargs = dict(marker=[(-1, -d), (1, d)], markersize=12,
