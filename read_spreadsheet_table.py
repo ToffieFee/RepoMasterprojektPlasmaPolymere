@@ -738,17 +738,19 @@ def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condi
         else:
             df_list_ = []
             for d in df_list:
+                print(d.index)
                 verfahrgeschwindigkeit_where = d['Verfahrgeschwindigkeit'] == verfahrgeschwindigkeit
                 indices_verfahrgeschwindigkeit = np.where(verfahrgeschwindigkeit_where)[0] # indices
                 verfahrgeschwindigkeit_where_ref = d['Verfahrgeschwindigkeit'] == 0.0 # referenz
                 referenz_verfahrgeschwindigkeit = np.where(verfahrgeschwindigkeit_where_ref)[0] # indices referenz
+                print(indices_verfahrgeschwindigkeit)
                 if len(indices_verfahrgeschwindigkeit) == 0 and indices_verfahrgeschwindigkeit.size > 0:
                     indices_verfahrgeschwindigkeit = [0]
-                if indices_verfahrgeschwindigkeit != [0]:
+                    dd = d.iloc[indices_verfahrgeschwindigkeit]
+                else:
+                # if indices_verfahrgeschwindigkeit != [0]:
                     d_ref = d.iloc[referenz_verfahrgeschwindigkeit]
                     dd = pd.concat([d.iloc[indices_verfahrgeschwindigkeit], d_ref], axis=0)
-                else:
-                    dd = d.iloc[indices_verfahrgeschwindigkeit]
                 df_list_.append(dd)
                 # df_list_.append(d.iloc[indices_verfahrgeschwindigkeit])
             df_list = df_list_
@@ -870,17 +872,17 @@ if __name__ == '__main__':
     one_type = 'n'      # 'y' or 'n' or None
     type_ = 'Dymid'
 
-    one_time = 'y'      # 'y' or 'n' or None
+    one_time = None#'n'      # 'y' or 'n' or None
     time = 5.0
 
-    one_zyklus = None    # 'y' or 'n' or None
+    one_zyklus = 'n'    # 'y' or 'n' or None
     zyklusanzahl = 1.0
 
     # fuer zeitmessung
-    one_verfahrgeschwindigkeit = None  # 'y' or 'n' or None
+    one_verfahrgeschwindigkeit = 'n'  # 'y' or 'n' or None
     verfahrgeschwindigkeit = 2.5
 
-    one_energieeintrag = 'y' # 'y' or None
+    one_energieeintrag = 'y' #'y' # 'y' or None
     energieeintrag = 2.5
 
     # fuer ND:
@@ -894,18 +896,22 @@ if __name__ == '__main__':
     columns_of_interest = ['Material', 'Glasfaseranteil', 'Typ', 'Verfahrgeschwindigkeit', 'Zeit', 'KW_Wasser_mean', 'KW_Wasser_std', 'KW_Diodmethan_mean', 'KW_Diodmethan_std', 'KW_Ethylglykol_mean', 'KW_Ethylglykol_std', 'OE_total_mean', 'OE_total_std', 'OE_dispers_mean', 'OE_dispers_std', 'OE_polar_mean', 'OE_polar_std']
 
     # plotting settings
-    x = 'Verfahrgeschwindigkeit'
-    y = 'OE_total_mean'
-    yerr = 'OE_total_std'
+    x = 'Zeit'#'Verfahrgeschwindigkeit'
+    y = 'tmax in MPa mean'
+    yerr = 'tmax in MPa std'
 
-    x_min = 0
-    x_max = 42
-    scale = ''
-    x_label = 'Verfahrgeschwindigkeit in m/min'
-    y_label = 'Disperse Oberflächenenergie in mN/m' #'$F_{max}$ in N'
+    x_min = 4
+    x_max = 30000
+    scale = 'log'
+    x_label = 'Zeit in min' #'Verfahrgeschwindigkeit in m/min'
+    y_label = 'Zugfestigkeit in MPa' #'Oberflächenenergie in mN/m' #'$F_{max}$ in N'
+
+    # ticks = [1, 2, 2.5, 5, 10, 20]
+    ticks = [5, 30, 60, 1440, 10080, 20160]
+    ticklabels = ["5 min", "30 min", "1 h", "1 Tag", "7 Tage", "14 Tage"]
 
     save_plot_path = "/Users/toffiefee/Documents/Uni_Bremen/Masterprojekt_2.0/Ergebnisse/Abbildungen/"
-    save_plot_name = ''#'PP_gf30_x-Verfahrgeschwindigkeit_y-OE_dispers'#"HDPE_x-Verfahrgeschwindigkeit_y-Fmax" 
+    save_plot_name = ''#'HDPE_Zeit_Zugfestigkeit_Bruchbild'#'HDPE_Verfahrgeschwindigkeit_Zugfestigkeit_Bruchbild'#'PP_gf30_x-Verfahrgeschwindigkeit_y-OE_dispers'#"HDPE_x-Verfahrgeschwindigkeit_y-Fmax" 
 
     figsize = [8,4] # [x, y]
 
@@ -944,6 +950,7 @@ if __name__ == '__main__':
     # df = df.drop('PP_5m-min_Klebeeinweisung')
     # df = df.drop('PP_20m-min_Klebeeinweisung')
     # df = df.drop('PP_40m-min_Klebeeinweisung')
+    # df = df.drop('HDPE_frisch_GleichesMitGleichem_15m-min')
 
     # df = df.drop('Kleben > KW bei 1m-min 1')
     # df = df.drop('Kleben > KW bei 1m-min 2')
@@ -980,6 +987,13 @@ if __name__ == '__main__':
     df = pd.read_pickle(path_spreadsheet + "df.pkl")
     df = df.astype({"Energieeintrag": float})
 
+
+    df = df.drop('HDPE_frisch_Vfg40')
+    df = df.drop('HDPE_frisch_Materialreferenz')
+    df = df.drop('HDPE_rezykliert_mT_Materialreferenz')
+    df = df.drop('HDPE_rezykliert_oT_Materialreferenz')
+
+
     datatypes = df.dtypes
     print(datatypes)
 
@@ -1009,6 +1023,23 @@ if __name__ == '__main__':
     # y = input(f'Enter Y : {df.columns} \n')
 
     # print(df)
+
+    # delete all similar things in labels
+    same_labels = []
+    split_label = np.asarray([l.split("_") for l in label])
+    no_of_labels = len(split_label)
+    for string in split_label[0]:
+        equals = [string in split_label[i] for i in range(no_of_labels)]
+        if np.asarray(equals).all():
+            same_labels.append(string)
+
+    for i, _ in enumerate(split_label):
+        for s in same_labels:
+            split_label[i].remove(s)
+    
+    split_label = [', '.join(s) for s in split_label]
+   
+    label = split_label
 
 
     cmap = matplotlib.cm.get_cmap('turbo_r')
@@ -1044,6 +1075,7 @@ if __name__ == '__main__':
             # print(len(df))
 
             # print(df)
+            text_yplus = [0.05, -0.1, -0.2]
             for i, d in enumerate(df):
 
                 # print(d[['Verfahrgeschwindigkeit', 'Glasfaseranteil', 'Typ', 'Zeit']])
@@ -1054,21 +1086,32 @@ if __name__ == '__main__':
                 # referenz = pd.DataFrame()
                 # print(referenz)
                 ax1.scatter(anderes[x], anderes[y], label=label[i], marker='x', color=colors[i])
+                # print(d['Bruchbild'], '\n')
                 if yerr != '' or yerr != None:
                     ax1.errorbar(anderes[x], anderes[y], yerr=anderes[yerr], xerr=None, fmt='none', capsize=3.0, elinewidth=0.5, ecolor=colors[i])
+                for g, xx in enumerate(anderes[x]):
+                    ax1.text(xx + 0.1*xx, anderes[y].iloc[g]+text_yplus[i], anderes['Bruchbild'].iloc[g], color=colors[i], fontsize=8, bbox=dict(facecolor='white', edgecolor='none', pad=-0.2))
+
 
                 if referenz.empty == False:
                     # ax2 = ax1.twiny()
+                    # print(x_max+1)
+                    # print(referenz[y])
+                    # print(label[i])
                     ax2.scatter(x_max+1, referenz[y], label=label[i], marker='x', color=colors[i])
                     if yerr != '' or yerr != None:
                         ax2.errorbar(x_max+1, referenz[y], yerr=referenz[yerr], xerr=None, fmt='none', capsize=3.0, elinewidth=0.5, ecolor=colors[i])
+                    for g, xx in enumerate(referenz[y]):
+                        ax2.text(x_max+1 * 150, referenz[y].iloc[g]+text_yplus[i], referenz['Bruchbild'].iloc[g], color=colors[i], fontsize=8)
 
                     # plt.axhline(y=float(referenz[y]), color=colors[i])
                     # plt.fill_between([x_min, x_max], float(referenz[y]) - float(referenz[yerr]), float(referenz[y]) + float(referenz[yerr]), color=colors[i], alpha=0.2, edgecolor='none')
                 # print(anderes[x], anderes[y])
 
             if scale == "log":
-                plt.xscale(scale)
+                ax1.set_xscale(scale)
+                ax1.set_xlim(x_min, x_max)
+                # plt.xscale(scale)
             else:
                 ax1.set_xlim(x_min, x_max)
             if x_label != None or x_label != "":
@@ -1089,6 +1132,10 @@ if __name__ == '__main__':
         ax2.yaxis.set_visible(False)
         ax2.set_xticks([x_max+1])
         ax2.set_xticklabels(['Referenz'])
+        ax1.set_xticks(ticks)
+        if ticklabels == None:
+            ticklabels = [str(t) for t in ticks]
+        ax1.set_xticklabels(ticklabels, rotation=90)
 
         d = .5  # proportion of vertical to horizontal extent of the slanted line
         kwargs = dict(marker=[(-1, -d), (1, d)], markersize=12,
