@@ -5,6 +5,7 @@ from os.path import exists
 import openpyxl
 import matplotlib
 import matplotlib.pyplot as plt
+from matplotlib.ticker import MultipleLocator
 import operator
 from functools import reduce
 matplotlib.rcParams['mathtext.fontset'] = 'stix'
@@ -325,6 +326,7 @@ def reduce_df(df, one_mat, material, one_mT_or_oT, trennmittelschicht, one_condi
 
         materialtypes = df['Material'].unique()
         label_ = []
+        label = []
 
         for mat in materialtypes:
             material_where = df['Material'] == mat
@@ -880,32 +882,32 @@ if __name__ == '__main__':
     path_Zug_xlsfiles = "/Users/toffiefee/Documents/Uni_Bremen/Masterprojekt_2.0/Ergebnisse/Zugversuch/"
 
     one_mat = 'y'       # 'y' or 'n'
-    material = 'HDPE'
+    material = 'PP'
 
     one_condition = 'n' # 'y' or 'n'
-    condition = 'frisch'
+    condition = 'rezykliert'
 
-    one_mT_or_oT = 'n' # 'mT' or 'oT' or None
+    one_mT_or_oT = None # 'mT' or 'oT' or None
     trennmittelschicht = 'mT' 
 
-    one_gf = None       # 'y' or 'n' or None
-    gfamount = 30.0
+    one_gf = 'n'       # 'y' or 'n' or None
+    gfamount = 0.0
 
     one_type = 'n'      # 'y' or 'n' or None
     type_ = 'Dymid'
 
-    one_time = 'y'#'n'      # 'y' or 'n' or None
+    one_time = None#'n'      # 'y' or 'n' or None
     time = 5.0
 
     one_zyklus = 'y'#'n'    # 'y' or 'n' or None
     zyklusanzahl = 1.0
 
     # fuer zeitmessung
-    one_verfahrgeschwindigkeit = None #'n'  # 'y' or 'n' or None
-    verfahrgeschwindigkeit = 2.5
+    one_verfahrgeschwindigkeit = 'y' #'n'  # 'y' or 'n' or None
+    verfahrgeschwindigkeit = 20.0
 
     one_energieeintrag = None #'y' # 'y' or None
-    energieeintrag = 2.5
+    energieeintrag = 1.0
 
     # fuer ND:
     one_leistung = None # 'y' or 'n' or None
@@ -919,14 +921,15 @@ if __name__ == '__main__':
 
     # plotting settings
     # x = 'Zyklenanzahl'
-    # x = 'Zeit'
-    x = 'Verfahrgeschwindigkeit'
+    x = 'Zeit'
+    # x = 'Verfahrgeschwindigkeit'
+    # x = 'Glasfaseranteil'
     # y ='OE_total_mean'
     # yerr = 'OE_total_std'
-    y ='OE_polar_mean'
-    yerr = 'OE_polar_std'
-    # y ='OE_dispers_mean'
-    # yerr = 'OE_dispers_std'
+    # y ='OE_polar_mean'
+    # yerr = 'OE_polar_std'
+    y ='OE_dispers_mean'
+    yerr = 'OE_dispers_std'
     # y = 'tmax in MPa mean'
     # yerr = 'tmax in MPa std'
     # y = 'Fmax in N mean'
@@ -934,39 +937,43 @@ if __name__ == '__main__':
     # y = 'e-F max in mm mean'
     # yerr = 'e-F max in mm std'
 
-    x_min = -0.5
+    x_min = 0.5
     # x_max = 30000
-    x_max = 41
+    x_max = 3.5
+    # x_max = 5.5
     # scale = 'log'
-    # scale = 'aequidistant'
-    scale = None
+    scale = 'aequidistant'
+    # scale = None
     # x_label = 'Zyklenanzahl x Verfahrgeschwindigkeit in m/min'
-    # x_label = 'Zeit'
-    x_label = 'Verfahrgeschwindigkeit in m/min'
+    x_label = 'Zeit'
+    # x_label = 'Verfahrgeschwindigkeit in m/min'
+    # x_label = 'Glasfaseranteil in %'
     # y_label = 'Zugfestigkeit in MPa' 
     # y_label = 'Gesamte Oberflächenenergie in mN/m'
-    # y_label = 'Disperse Oberflächenenergie in mN/m'
-    y_label = 'Polare Oberflächenenergie in mN/m'
+    y_label = 'Disperse Oberflächenenergie in mN/m'
+    # y_label = 'Polare Oberflächenenergie in mN/m'
     # y_label = '$F_{max}$ in N'
     # y_label = 'Dehnung bei $F_{max}$ in mm'
 
-    ticks = None
+    # ticks = None
     # ticks = [1, 2, 2.5, 5, 10, 20]
-    ticklabels = None
+    # ticklabels = None
     # ticks = [1, 2, 4, 8, 16]
+    # ticklabels = ["1 x 1", "3 x 3", "5 x 5", "10 x 10", "20 x 20"]
     # ticklabels = ["1 x 2,5", "2 x 5", "4 x 10", "8 x 20", "16 x 40"]
     # ticks = [5, 60, 1440, 10080, 20160]
     # ticks = [1, 2, 3, 4, 5]
     # ticklabels = ["5 min", "1 h", "1 Tag", "7 Tage", "14 Tage"]
-    # ticks = [1, 2, 3]
-    # ticklabels = ["5 min", "1 h", "1 Tag"]#, "7 Tage", "14 Tage"]
+    ticks = [1, 2, 3]
+    ticklabels = ["5 min", "30 min", "1 Tag"]#, "7 Tage", "14 Tage"]
 
 
     save_plot_path = "/Users/toffiefee/Documents/Uni_Bremen/Masterprojekt_2.0/Ergebnisse/Abbildungen/"
-    save_plot_name = 'HDPE_1xVfg2-5_Verfahrgeschwindigkeit_polareOE_Bruchbild'#'save'
+    save_plot_name = 'PP_Vfg20_gfAll_Zeit_disperseOE'#'save'
     #'HDPE_Energieeintrag_Zyklusanzahl_Zugfestigkeit_Bruchbild'#'HDPE_Verfahrgeschwindigkeit_Zugfestigkeit_Bruchbild'#'PP_gf30_x-Verfahrgeschwindigkeit_y-OE_dispers'#"HDPE_x-Verfahrgeschwindigkeit_y-Fmax" 
 
     figsize = [8,4] # [x, y]
+    # figsize = [6,4] # [x, y]
 
     text_yplus = [0.1, -10, -0.15]
     # text_yplus_ref = [-0.15,0,0.2]
@@ -984,6 +991,7 @@ if __name__ == '__main__':
     text_yplus_ref = [0.2,0,-0.1]
 
     # text_yplus = [0.2,-0.0,-0.2]
+    # text_yplus = [1,-0.5,-1]
     text_yplus = [0,0,0]
     text_yplus_ref = [0,0,0]
     # text_yplus_ref = [1.7,0,-0.8]
@@ -1061,6 +1069,15 @@ if __name__ == '__main__':
 
 
     # df = df.drop('HDPE_frisch_Vfg40')
+    df = df.drop('HDPE_frisch_Vfg10')
+    df = df.drop('HDPE_rezykliert_oT_Vfg10')
+    df = df.drop('HDPE_rezykliert_mT_Vfg10')
+    df = df.drop('nip1')
+    df = df.drop('nip2')
+    # df = df.drop('HDPE_frisch_Vfg2-5')
+    # df = df.drop('HDPE_rezykliert_oT_Vfg2-5')
+    # df = df.drop('HDPE_rezykliert_mT_Vfg2-5')
+    df = df.drop('PP_Natur_Vfg10')
     df = df.drop('HDPE_frisch_Materialreferenz')
     df = df.drop('HDPE_rezykliert_mT_Materialreferenz')
     df = df.drop('HDPE_rezykliert_oT_Materialreferenz')
@@ -1101,22 +1118,29 @@ if __name__ == '__main__':
 
     # print(df)
 
-    # delete all similar things in labels
-    same_labels = []
-    split_label = np.asarray([l.split("_") for l in label])
-    no_of_labels = len(split_label)
-    for string in split_label[0]:
-        equals = [string in split_label[i] for i in range(no_of_labels)]
-        if np.asarray(equals).all():
-            same_labels.append(string)
+    if len(label) > 1:
+        # delete all similar things in labels
+        same_labels = []
+        split_label = np.asarray([l.split("_") for l in label])
+        no_of_labels = len(split_label)
+        for string in split_label[0]:
+            equals = [string in split_label[i] for i in range(no_of_labels)]
+            if np.asarray(equals).all():
+                same_labels.append(string)
 
-    for i, _ in enumerate(split_label):
-        for s in same_labels:
-            split_label[i].remove(s)
+        for i, _ in enumerate(split_label):
+            for s in same_labels:
+                # print(type(split_label[i]))
+                # print(split_label[i])
+                if type(split_label[i]) == np.ndarray:
+                    split_label = [split_label[u].tolist() for u,_ in enumerate(split_label)]
+                split_label[i].remove(s)
+
+        
+        split_label = [', '.join(s) for s in split_label]
     
-    split_label = [', '.join(s) for s in split_label]
-   
-    label = split_label
+        label = split_label
+
 
 
     cmap = matplotlib.cm.get_cmap('turbo_r')
@@ -1147,8 +1171,9 @@ if __name__ == '__main__':
         else:
 
             amount_colors = len(df)
-            colors = [cmap(c) for c in np.arange(0.05, 0.95, 1/(amount_colors+2))]
-            colors = [cmap(c) for c in [0.05, 0.2, 0.7]]
+            colors = [cmap(c) for c in np.arange(0.05, 0.99, 1/(amount_colors+2))]
+            # colors = [cmap(c) for c in [0.05, 0.2, 0.7]]
+            # colors = [cmap(c) for c in [0.7]]
             # print(len(colors))
             # print(len(df))
 
@@ -1186,21 +1211,26 @@ if __name__ == '__main__':
                         ax1.errorbar(ticks, ticks_y, yerr=ticks_yerr, xerr=None, fmt='none', capsize=3.0, elinewidth=0.5, ecolor=colors[i])
                     else:
                         ax1.errorbar(anderes[x], anderes[y], yerr=anderes[yerr], xerr=None, fmt='none', capsize=3.0, elinewidth=0.5, ecolor=colors[i])
-                if scale == 'aequidistant':
-                        for g, xx in enumerate(ticks):
-                            ax1.text(xx+ 0.1, ticks_y[g]+text_yplus[i], ticks_bruchbild[g], color=colors[i], fontsize=8, bbox=dict(facecolor='white', edgecolor='none', pad=-0.2))
-                            # ax1.text(xx+ 0.1, anderes[y].iloc[g]+text_yplus[i], anderes['Bruchbild'].iloc[g], color=colors[i], fontsize=8, bbox=dict(facecolor='white', edgecolor='none', pad=-0.2))
-                elif x == 'Verfahrgeschwindigkeit':
-                    for g, xx in enumerate(anderes[x]):
-                        if xx == 1.0:
-                            ax1.text(xx- 1.2, anderes[y].iloc[g]+text_yplus[i], anderes['Bruchbild'].iloc[g], color=colors[i], fontsize=8, bbox=dict(facecolor='white', edgecolor='none', pad=-0.2))
-                        elif xx == 2.0:
-                            ax1.text(xx- 0.5, 5+0.2*anderes[y].iloc[g]+text_yplus[i], anderes['Bruchbild'].iloc[g], color=colors[i], fontsize=8, bbox=dict(facecolor='white', edgecolor='none', pad=-0.2))
-                        else:
-                            ax1.text(xx+ 0.1, anderes[y].iloc[g]+text_yplus[i], anderes['Bruchbild'].iloc[g], color=colors[i], fontsize=8, bbox=dict(facecolor='white', edgecolor='none', pad=-0.2))
-                else:
-                    for g, xx in enumerate(anderes[x]):
-                        ax1.text(xx+ 0.1, anderes[y].iloc[g]+text_yplus[i], anderes['Bruchbild'].iloc[g], color=colors[i], fontsize=8, bbox=dict(facecolor='white', edgecolor='none', pad=-0.2))
+                # if scale == 'aequidistant':
+                #         for g, xx in enumerate(ticks):
+                #             ax1.text(xx+ 0.1, ticks_y[g]+text_yplus[i], ticks_bruchbild[g], color=colors[i], fontsize=8, bbox=dict(facecolor='white', edgecolor='none', pad=-0.2))
+                #             # ax1.text(xx+ 0.1, anderes[y].iloc[g]+text_yplus[i], anderes['Bruchbild'].iloc[g], color=colors[i], fontsize=8, bbox=dict(facecolor='white', edgecolor='none', pad=-0.2))
+                # elif x == 'Verfahrgeschwindigkeit':
+                #     for g, xx in enumerate(anderes[x]):
+                #         bruch = anderes['Bruchbild'].iloc[g]
+                #         # print(bruch, type(bruch))
+                #         if type(bruch) == float and math.isnan(bruch):
+                #             bruch = 'N/A'
+                #         if xx == 1.0:
+                #             ax1.text(xx- 2.5, anderes[y].iloc[g]+text_yplus_ref[i], anderes['Bruchbild'].iloc[g], color=colors[i], fontsize=8, bbox=dict(facecolor='white', edgecolor='none', pad=-0.2))
+                #             # ax1.text(xx-0.5, 30.0+text_yplus_ref[i], bruch, color=colors[i], fontsize=8, bbox=dict(facecolor='white', edgecolor='none', pad=-0.2))
+                #         # elif xx == 2.5:
+                #         #     ax1.text(xx- 0.5, 5+0.2*anderes[y].iloc[g]+text_yplus[i], anderes['Bruchbild'].iloc[g], color=colors[i], fontsize=8, bbox=dict(facecolor='white', edgecolor='none', pad=-0.2))
+                #         else:
+                #             ax1.text(xx+ 0.4, anderes[y].iloc[g]+text_yplus[i], bruch, color=colors[i], fontsize=8)#, bbox=dict(facecolor='white', edgecolor='none', pad=-0.2))
+                # else:
+                #     for g, xx in enumerate(anderes[x]):
+                #         ax1.text(xx+ 0.1, anderes[y].iloc[g]+text_yplus[i], anderes['Bruchbild'].iloc[g], color=colors[i], fontsize=8, bbox=dict(facecolor='white', edgecolor='none', pad=-0.2))
 
 
                 if referenz.empty == False:
@@ -1211,8 +1241,8 @@ if __name__ == '__main__':
                     ax2.scatter(x_max+1, referenz[y], label=label[i], marker='x', color=colors[i], s=12)
                     if yerr != '' or yerr != None:
                         ax2.errorbar(x_max+1, referenz[y], yerr=referenz[yerr], xerr=None, fmt='none', capsize=3.0, elinewidth=0.5, ecolor=colors[i])
-                    for g, xx in enumerate(referenz[y]):
-                        ax2.text(x_max+1 + 0.1, referenz[y].iloc[g]+text_yplus_ref[i], referenz['Bruchbild'].iloc[g], color=colors[i], fontsize=8)
+                    # for g, xx in enumerate(referenz[y]):
+                    #     ax2.text(x_max+1 + 0.1, referenz[y].iloc[g]+text_yplus_ref[i], referenz['Bruchbild'].iloc[g], color=colors[i], fontsize=8)
 
                     # plt.axhline(y=float(referenz[y]), color=colors[i])
                     # plt.fill_between([x_min, x_max], float(referenz[y]) - float(referenz[yerr]), float(referenz[y]) + float(referenz[yerr]), color=colors[i], alpha=0.2, edgecolor='none')
@@ -1247,6 +1277,11 @@ if __name__ == '__main__':
             if ticklabels == None:
                 ticklabels = [str(t) for t in ticks]
             ax1.set_xticklabels(ticklabels)#, rotation=90)
+
+        
+        # # Set the x-axis tick interval to every 5 units
+        # x_major_locator = MultipleLocator(5)
+        # ax1.xaxis.set_major_locator(x_major_locator)
 
         d = .5  # proportion of vertical to horizontal extent of the slanted line
         kwargs = dict(marker=[(-1, -d), (1, d)], markersize=12,
