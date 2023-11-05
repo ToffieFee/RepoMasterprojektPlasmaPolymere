@@ -881,29 +881,29 @@ if __name__ == '__main__':
 
     path_Zug_xlsfiles = "/Users/toffiefee/Documents/Uni_Bremen/Masterprojekt_2.0/Ergebnisse/Zugversuch/"
 
-    one_mat = 'y'       # 'y' or 'n'
-    material = 'PP'
+    one_mat = 'n'       # 'y' or 'n'
+    material = 'PA66'
 
     one_condition = 'n' # 'y' or 'n'
     condition = 'rezykliert'
 
-    one_mT_or_oT = None # 'mT' or 'oT' or None
+    one_mT_or_oT = 'n'#'n' # 'mT' or 'oT' or None
     trennmittelschicht = 'mT' 
 
-    one_gf = 'n'       # 'y' or 'n' or None
+    one_gf = 'y'#'y'       # 'y' or 'n' or None
     gfamount = 0.0
 
     one_type = 'n'      # 'y' or 'n' or None
     type_ = 'Dymid'
 
-    one_time = None#'n'      # 'y' or 'n' or None
+    one_time = 'y'#'n'      # 'y' or 'n' or None
     time = 5.0
 
     one_zyklus = 'y'#'n'    # 'y' or 'n' or None
     zyklusanzahl = 1.0
 
     # fuer zeitmessung
-    one_verfahrgeschwindigkeit = 'y' #'n'  # 'y' or 'n' or None
+    one_verfahrgeschwindigkeit = None #'n'  # 'y' or 'n' or None
     verfahrgeschwindigkeit = 20.0
 
     one_energieeintrag = None #'y' # 'y' or None
@@ -921,15 +921,15 @@ if __name__ == '__main__':
 
     # plotting settings
     # x = 'Zyklenanzahl'
-    x = 'Zeit'
-    # x = 'Verfahrgeschwindigkeit'
+    # x = 'Zeit'
+    x = 'Verfahrgeschwindigkeit'
     # x = 'Glasfaseranteil'
     # y ='OE_total_mean'
     # yerr = 'OE_total_std'
-    # y ='OE_polar_mean'
-    # yerr = 'OE_polar_std'
-    y ='OE_dispers_mean'
-    yerr = 'OE_dispers_std'
+    y ='OE_polar_mean'
+    yerr = 'OE_polar_std'
+    # y ='OE_dispers_mean'
+    # yerr = 'OE_dispers_std'
     # y = 'tmax in MPa mean'
     # yerr = 'tmax in MPa std'
     # y = 'Fmax in N mean'
@@ -937,39 +937,39 @@ if __name__ == '__main__':
     # y = 'e-F max in mm mean'
     # yerr = 'e-F max in mm std'
 
-    x_min = 0.5
-    # x_max = 30000
-    x_max = 3.5
+    x_min = 4
+    x_max = 41
+    # x_max = 3.5
     # x_max = 5.5
     # scale = 'log'
-    scale = 'aequidistant'
-    # scale = None
+    # scale = 'aequidistant'
+    scale = None
     # x_label = 'Zyklenanzahl x Verfahrgeschwindigkeit in m/min'
-    x_label = 'Zeit'
-    # x_label = 'Verfahrgeschwindigkeit in m/min'
+    # x_label = 'Zeit'
+    x_label = 'Verfahrgeschwindigkeit in m/min'
     # x_label = 'Glasfaseranteil in %'
     # y_label = 'Zugfestigkeit in MPa' 
     # y_label = 'Gesamte Oberflächenenergie in mN/m'
-    y_label = 'Disperse Oberflächenenergie in mN/m'
-    # y_label = 'Polare Oberflächenenergie in mN/m'
+    # y_label = 'Disperse Oberflächenenergie in mN/m'
+    y_label = 'Polare Oberflächenenergie in mN/m'
     # y_label = '$F_{max}$ in N'
     # y_label = 'Dehnung bei $F_{max}$ in mm'
 
-    # ticks = None
+    ticks = None
     # ticks = [1, 2, 2.5, 5, 10, 20]
-    # ticklabels = None
+    ticklabels = None
     # ticks = [1, 2, 4, 8, 16]
     # ticklabels = ["1 x 1", "3 x 3", "5 x 5", "10 x 10", "20 x 20"]
     # ticklabels = ["1 x 2,5", "2 x 5", "4 x 10", "8 x 20", "16 x 40"]
     # ticks = [5, 60, 1440, 10080, 20160]
     # ticks = [1, 2, 3, 4, 5]
     # ticklabels = ["5 min", "1 h", "1 Tag", "7 Tage", "14 Tage"]
-    ticks = [1, 2, 3]
-    ticklabels = ["5 min", "30 min", "1 Tag"]#, "7 Tage", "14 Tage"]
+    # ticks = [1, 2, 3]
+    # ticklabels = ["5 min", "30 min", "1 Tag"]#, "7 Tage", "14 Tage"]
 
 
     save_plot_path = "/Users/toffiefee/Documents/Uni_Bremen/Masterprojekt_2.0/Ergebnisse/Abbildungen/"
-    save_plot_name = 'PP_Vfg20_gfAll_Zeit_disperseOE'#'save'
+    save_plot_name = 'MatAll_t5min_gf0_Verfahrgeschwindigkeit_polareOE'#'save'
     #'HDPE_Energieeintrag_Zyklusanzahl_Zugfestigkeit_Bruchbild'#'HDPE_Verfahrgeschwindigkeit_Zugfestigkeit_Bruchbild'#'PP_gf30_x-Verfahrgeschwindigkeit_y-OE_dispers'#"HDPE_x-Verfahrgeschwindigkeit_y-Fmax" 
 
     figsize = [8,4] # [x, y]
@@ -1072,6 +1072,8 @@ if __name__ == '__main__':
     df = df.drop('HDPE_frisch_Vfg10')
     df = df.drop('HDPE_rezykliert_oT_Vfg10')
     df = df.drop('HDPE_rezykliert_mT_Vfg10')
+    df = df.drop('DYMID_R_PA66GF30_Vfg20_30min_Versuch2')
+
     df = df.drop('nip1')
     df = df.drop('nip2')
     # df = df.drop('HDPE_frisch_Vfg2-5')
@@ -1279,9 +1281,9 @@ if __name__ == '__main__':
             ax1.set_xticklabels(ticklabels)#, rotation=90)
 
         
-        # # Set the x-axis tick interval to every 5 units
-        # x_major_locator = MultipleLocator(5)
-        # ax1.xaxis.set_major_locator(x_major_locator)
+        # Set the x-axis tick interval to every 5 units
+        x_major_locator = MultipleLocator(5)
+        ax1.xaxis.set_major_locator(x_major_locator)
 
         d = .5  # proportion of vertical to horizontal extent of the slanted line
         kwargs = dict(marker=[(-1, -d), (1, d)], markersize=12,
